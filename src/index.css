@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-dark: #000000;
+  --text-primary: #f5f5f7;
+  --text-secondary: #86868b;
+  --accent-blue: #2997ff;
+  --accent-orange: #ff3b30;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(41, 151, 255, 0.3);
+  color: white;
+}
+
+/* Custom Scrollbar - Apple style minimal */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #fff 0%, #86868b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .glass-panel {
+    background: rgba(22, 22, 23, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+}
