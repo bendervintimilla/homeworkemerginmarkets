@@ -17,8 +17,8 @@ const Hero = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, ease: "easeOut" }}
                 >
-                    <h2 className="text-xl md:text-2xl font-medium tracking-[0.2em] text-accent-blue uppercase mb-6">
-                        Emerging Markets Group 7
+                    <h2 className="text-xl md:text-2xl font-medium tracking-[0.2em] text-red-500 uppercase mb-6">
+                        Cybersecurity Group 7
                     </h2>
                 </motion.div>
 
@@ -26,10 +26,10 @@ const Hero = () => {
                     className="text-6xl md:text-8xl font-bold tracking-tight mb-8 leading-tight"
                     style={{ y: y1, opacity }}
                 >
-                    <span className="text-gradient block">The Silent Shift.</span>
+                    <span className="text-gradient block">APT35.</span>
                     <span className="text-3xl md:text-5xl text-gray-500 font-normal mt-4 block">
-                        From Local Execution to <br />
-                        <span className="text-white">Algorithmic Orchestration</span>
+                        Charming Kitten — <br />
+                        <span className="text-white">State-Sponsored Cyber Espionage</span>
                     </span>
                 </motion.h1>
 
@@ -37,9 +37,18 @@ const Hero = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5, duration: 1 }}
-                    className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mt-4 mb-12 leading-relaxed"
+                    className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mt-4 mb-4 leading-relaxed"
                 >
-                    Redefining trust, authority, and decision-making in the modern industrial age.
+                    An Iranian state-sponsored threat group conducting long-running operations targeting U.S. and Middle Eastern military, diplomatic, and government entities.
+                </motion.p>
+
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7, duration: 1 }}
+                    className="text-sm text-gray-600 font-mono mb-12"
+                >
+                    Andres · Mattia · Joyce · Juan David · Pablo
                 </motion.p>
 
                 {/* Dynamic Image Reveal */}
@@ -49,11 +58,11 @@ const Hero = () => {
                     transition={{ delay: 0.8, duration: 1.2, ease: "circOut" }}
                     className="relative z-10 w-full max-w-4xl"
                 >
-                    <div className="relative rounded-2xl overflow-hidden shadow-[0_0_120px_rgba(41,151,255,0.15)] border border-white/10 group">
+                    <div className="relative rounded-2xl overflow-hidden shadow-[0_0_120px_rgba(239,68,68,0.15)] border border-white/10 group">
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10 opacity-60"></div>
                         <img
-                            src="/assets/hero_baton.png"
-                            alt="Shift from Human to Algorithm"
+                            src="/assets/hero_apt35.png"
+                            alt="APT35 Charming Kitten"
                             className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-[2s]"
                         />
                     </div>

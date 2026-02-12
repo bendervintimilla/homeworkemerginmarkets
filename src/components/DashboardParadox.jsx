@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, Eye, BookOpen, Activity } from 'lucide-react';
+import { Crosshair, Key, Network, Trash2 } from 'lucide-react';
 
 const EventPoint = ({ icon: Icon, time, title, isActive, onClick, color }) => (
     <motion.button
@@ -13,7 +13,7 @@ const EventPoint = ({ icon: Icon, time, title, isActive, onClick, color }) => (
             <Icon size={28} />
         </div>
         <div className="text-center w-40">
-            <span className={`font-mono text-xs mb-2 block transition-colors ${isActive ? 'text-orange-400' : 'text-gray-600'}`}>{time}</span>
+            <span className={`font-mono text-xs mb-2 block transition-colors ${isActive ? 'text-red-400' : 'text-gray-600'}`}>{time}</span>
             <h4 className={`font-bold text-sm transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}`}>{title}</h4>
         </div>
 
@@ -26,53 +26,57 @@ const EventPoint = ({ icon: Icon, time, title, isActive, onClick, color }) => (
     </motion.button>
 );
 
-const DashboardParadox = () => {
+const KillChainWalkthrough = () => {
     const [activeStep, setActiveStep] = useState(0);
 
     const steps = [
         {
-            time: "08:15 AM",
-            title: "THE TRIGGER",
-            desc: "A minor sensor drift — invisible to the AI monitoring system. Every dashboard reads green. System Status: NORMAL. But something imperceptible has already begun.",
-            icon: Activity,
+            time: "PHASES 1–2",
+            title: "INITIAL ACCESS",
+            desc: "Spearphishing link (T1566.002) targets an energy company employee via a tailored recruiting email. Victim trusts the domain — PupyRAT delivered via resume lure. A custom backdoor (BROKEYOLK) ensures persistent access with no noisy exploits.",
+            icon: Crosshair,
             color: "bg-green-600",
-            image: "/assets/step_trigger.png"
+            image: "/assets/killchain_phase1.png",
+            techniques: ["T1566.002 — Spearphishing Link", "T1189 — Drive-by Compromise", "S0192 — PupyRAT C2 Channel"]
         },
         {
-            time: "08:25 AM",
-            title: "THE CONFLICT",
-            desc: "A veteran operator sees sparks flying from the machine. His gut screams danger. But the dashboard still glows green. The supervisor hesitates — who do you trust: human instinct or the algorithm?",
-            icon: Eye,
+            time: "PHASES 3–4",
+            title: "CREDENTIAL THEFT",
+            desc: "LSASS memory dumped via Mimikatz — domain-level credentials harvested enabling broad authentication. Stolen credentials used to log into VPN and O365 as a legitimate employee. Traffic looks completely normal.",
+            icon: Key,
             color: "bg-yellow-600",
-            image: "/assets/step_conflict.png"
+            image: "/assets/killchain_phase2.png",
+            techniques: ["T1003.001 — LSASS Memory Dump", "S0002 — Mimikatz", "T1078 — Valid Accounts Abuse"]
         },
         {
-            time: "08:28 AM",
-            title: "THE DELAY",
-            desc: "Three critical minutes lost. The supervisor consults the digital playbook, seeks permission through the system. Authority is unclear. Fear of overriding the algorithm paralyzes action.",
-            icon: BookOpen,
+            time: "PHASES 5–6",
+            title: "LATERAL MOVEMENT",
+            desc: "PsExec deploys batch files running Mimikatz across multiple systems via service execution. Access scales exponentially. Exchange permissions manipulated via PowerShell — hundreds of mailboxes accessed through OWA with no additional malware.",
+            icon: Network,
             color: "bg-orange-600",
-            image: "/assets/step_delay.png"
+            image: "/assets/killchain_phase3.png",
+            techniques: ["T1569.002 — Service Execution", "S0029 — PsExec", "T1098.002 — Email Delegate", "T1114 — Email Collection"]
         },
         {
-            time: "08:30 AM",
-            title: "THE IMPACT",
-            desc: "Collision. Fire. Two hours of downtime. The dashboard still reads 'NORMAL' as smoke fills the floor. The algorithm never saw it coming.",
-            icon: AlertTriangle,
+            time: "PHASE 7",
+            title: "CLEANUP & EVASION",
+            desc: "Mimikatz binaries and artifacts deleted from remote systems. Forensic reconstruction severely hindered. The adversary leaves minimal trace — using legitimate tools that blend into normal enterprise activity.",
+            icon: Trash2,
             color: "bg-red-600",
-            image: "/assets/step_impact.png"
+            image: "/assets/killchain_phase4.png",
+            techniques: ["T1070.004 — Indicator Removal", "File Deletion Post-Exploitation", "Anti-Forensic Operations"]
         }
     ];
 
     return (
         <section className="py-32 px-4 bg-[#050505] relative overflow-hidden">
             {/* Background Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-green-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-red-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
             <div className="max-w-7xl mx-auto relative z-10">
                 <div className="text-center mb-24">
-                    <h2 className="text-4xl md:text-6xl font-bold mb-6">The Green Dashboard Paradox</h2>
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto">Efficiency increases, but "Ground Truth" situational awareness is lost.</p>
+                    <h2 className="text-4xl md:text-6xl font-bold mb-6">Kill Chain Walkthrough</h2>
+                    <p className="text-xl text-gray-400 max-w-2xl mx-auto">7-Phase Breach Scenario — From spearphishing to full enterprise compromise and evasion.</p>
                 </div>
 
                 {/* Timeline */}
@@ -127,9 +131,19 @@ const DashboardParadox = () => {
                                     {steps[activeStep].time}
                                 </div>
                                 <h3 className="text-3xl md:text-4xl font-bold mb-6 text-white leading-tight">{steps[activeStep].title}</h3>
-                                <p className="text-lg text-gray-300 leading-relaxed mb-8">
+                                <p className="text-lg text-gray-300 leading-relaxed mb-6">
                                     {steps[activeStep].desc}
                                 </p>
+
+                                {/* Techniques List */}
+                                <div className="space-y-2 mb-6">
+                                    {steps[activeStep].techniques.map((t, i) => (
+                                        <div key={i} className="flex items-center gap-2 text-sm font-mono text-gray-400">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></span>
+                                            <span>{t}</span>
+                                        </div>
+                                    ))}
+                                </div>
 
                                 {activeStep === 3 && (
                                     <motion.div
@@ -139,9 +153,9 @@ const DashboardParadox = () => {
                                     >
                                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
                                         <h5 className="text-red-400 font-bold mb-2 text-sm uppercase tracking-wider flex items-center gap-2">
-                                            <AlertTriangle size={16} /> Key Insight
+                                            <Trash2 size={16} /> Key Insight
                                         </h5>
-                                        <p className="text-red-100/80 text-base">Root Cause: Split accountability causes hesitation. Humans fear overriding the algorithm without proof.</p>
+                                        <p className="text-red-100/80 text-base">The adversary didn't break in — they logged in. Success relied on legitimate enterprise tools (Exchange, PowerShell, Identity), not loud malware.</p>
                                     </motion.div>
                                 )}
                             </div>
@@ -153,4 +167,4 @@ const DashboardParadox = () => {
     );
 };
 
-export default DashboardParadox;
+export default KillChainWalkthrough;
