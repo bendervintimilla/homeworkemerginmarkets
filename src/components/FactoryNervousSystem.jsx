@@ -1,5 +1,37 @@
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { FileText, ShieldAlert, Zap } from 'lucide-react';
+
+/* ─────────── TTP Card ─────────── */
+const TTPCard = ({ id, title, items, delay }) => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay }}
+        className="flex flex-col h-full"
+    >
+        {/* Header Block */}
+        <div className="bg-gradient-to-b from-[#0055ff] to-[#00aaff] p-6 text-center">
+            <div className="bg-black/40 inline-block px-3 py-1 mb-3">
+                <span className="text-white font-bold font-mono text-xl tracking-wider">{id}</span>
+            </div>
+            <h3 className="text-white font-bold text-lg leading-tight uppercase">{title}</h3>
+        </div>
+
+        {/* Content Block */}
+        <div className="flex-1 bg-gradient-to-b from-[#00aaff] to-[#00d4ff] p-6 pt-8 text-black">
+            <ul className="space-y-3">
+                {items.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm font-medium leading-snug">
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-black flex-shrink-0"></span>
+                        <span>{item}</span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    </motion.div>
+);
 
 const AttackArsenal = () => {
     const containerRef = useRef(null);
@@ -8,95 +40,246 @@ const AttackArsenal = () => {
         offset: ["start end", "end start"]
     });
 
-    const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
+    const opacity = useTransform(scrollYProgress, [0, 0.2], [0, 1]);
 
-    const ttps = [
-        { id: "T1566.002", name: "Spearphishing Link", tactic: "Initial Access", desc: "Targeted email with a link to a payload or credential theft page. Low cost, high success rate, easy to tailor per target." },
-        { id: "T1189", name: "Drive-by Compromise", tactic: "Initial Access", desc: "Compromised legitimate website serves malicious content. Victim trusts the domain, bypassing reputation-based defenses." },
-        { id: "T1078", name: "Valid Accounts", tactic: "Initial Access", desc: "Stolen credentials used to log in 'normally' via VPN/O365. Looks like real user activity — bypasses controls without MFA." },
-        { id: "T1003.001", name: "LSASS Credential Dump", tactic: "Credential Access", desc: "Targets LSASS memory which holds credential material. Tools like Mimikatz automate extraction of domain-wide credentials." },
-        { id: "T1569.002", name: "Service Execution", tactic: "Execution", desc: "Remote execution via services (PsExec) for lateral movement across enterprise systems. Fast and often allowed." },
-        { id: "T1098.002", name: "Email Delegate Access", tactic: "Persistence", desc: "Manipulates mailbox permissions so one compromised account can access many mailboxes. Stealthy — uses legitimate admin functionality." },
-        { id: "T1114", name: "Email Collection", tactic: "Collection", desc: "Reads and steals hundreds of emails from hundreds of mailboxes — high-value intelligence collection without dropping malware." },
-        { id: "T1070.004", name: "File Deletion", tactic: "Defense Evasion", desc: "Deletes artifacts (e.g., Mimikatz binary) after execution. Reduces forensic evidence and makes incident response harder." },
+    const techniquesPart1 = [
+        {
+            id: "T1566.002",
+            title: "PHISHING: SPEARPHISHING LINK",
+            items: [
+                "Targeted, legitimate-looking email",
+                "Goal: get victim to click a link that leads to a payload or credential theft",
+                "Classic initial access via social engineering",
+                "Why it works: low cost, high success, easy to personalize"
+            ]
+        },
+        {
+            id: "T1189",
+            title: "DRIVE-BY COMPROMISE",
+            items: [
+                "Lure hosted on a compromised legitimate website (not attacker domain)",
+                "Victim trusts the site → clicks → malicious content delivered",
+                "Benefit to attacker: lowers suspicion, can bypass reputation-based defenses"
+            ]
+        },
+        {
+            id: "T1078",
+            title: "VALID ACCOUNTS",
+            items: [
+                "Use stolen credentials to log in \"normally\" (e.g., VPN / O365)",
+                "Blends in as legitimate user activity",
+                "Often bypasses controls unless MFA, conditional access, and anomaly detection are strong"
+            ]
+        },
+        {
+            id: "T1003.00", // Image says T1003.00, likely typo for .001 but keeping faithful to image
+            title: "OS CREDENTIAL DUMPING: LSASS MEMORY",
+            items: [
+                "Dump credentials from LSASS on Windows systems",
+                "Enables scaling access across a domain environment",
+                "Common tooling: Mimikatz automates extraction"
+            ]
+        }
     ];
 
-    const software = [
-        { id: "S0192", name: "PupyRAT", desc: "Modular RAT/backdoor for remote access and C2 control once executed on host." },
-        { id: "S0002", name: "Mimikatz", desc: "Credential dumping tool — extracts credentials from Windows LSASS memory." },
-        { id: "S0029", name: "PsExec", desc: "Sysinternals remote execution utility — runs commands on remote Windows hosts for lateral movement." },
-        { id: "T1059.001", name: "PowerShell", desc: "Key execution engine. Exchange cmdlets like Add-MailboxPermission used to expand mailbox access stealthily." },
+    const techniquesPart2 = [
+        {
+            id: "T1569.002",
+            title: "SYSTEM SERVICES: SERVICE EXECUTION",
+            items: [
+                "Remote execution by creating/abusing services on other hosts",
+                "Enables lateral movement + mass execution",
+                "Often uses PsExec: fast, commonly permitted in enterprise environments"
+            ]
+        },
+        {
+            id: "T1098.002",
+            title: "ACCOUNT MANIPULATION: ADDITIONAL EMAIL DELEGATE PERMISSIONS",
+            items: [
+                "Modify mailbox permissions instead of deploying mailbox malware",
+                "Compromised account gains access to multiple mailboxes",
+                "Stealthy: uses legitimate, admin-like functionality"
+            ]
+        },
+        {
+            id: "T1114",
+            title: "EMAIL COLLECTION",
+            items: [
+                "Collect email at scale for intelligence/data theft",
+                "Access and read email across many mailboxes (potentially hundreds)",
+                "High-value collection with minimal additional malware deployment"
+            ]
+        },
+        {
+            id: "T1070.004",
+            title: "INDICATOR REMOVAL: FILE DELETION",
+            items: [
+                "Delete tools/artifacts after use (e.g., copied Mimikatz binary)",
+                "Reduces forensic evidence",
+                "Complicates detection and incident response"
+            ]
+        }
     ];
 
     return (
-        <section ref={containerRef} className="py-32 relative overflow-hidden bg-black">
-            <div className="max-w-7xl mx-auto px-4 mb-20 relative z-20 text-center">
-                <motion.h2
+        <section ref={containerRef} className="py-32 relative overflow-hidden bg-black text-white">
+            <div className="max-w-7xl mx-auto px-4 relative z-20">
+
+                {/* ─── SLIDE 4: Technical Overview Header ─── */}
+                <motion.div
                     style={{ opacity }}
-                    className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-red-400 via-white to-cyan-500"
+                    className="mb-24"
                 >
-                    Attack Arsenal
-                </motion.h2>
-                <p className="text-xl text-gray-400 max-w-3xl mx-auto">MITRE ATT&CK techniques and software weaponized by APT35 — mapped from the documented case study.</p>
-            </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+                        <div className="text-left">
+                            <p className="text-xs font-mono text-cyan-400 tracking-[0.3em] uppercase mb-4">2 · Technical Overview</p>
+                            <h2 className="text-5xl md:text-7xl font-bold leading-tight mb-4">
+                                <span className="block text-white">APT 35 TECHNICAL</span>
+                                <span className="block text-white">OVERVIEW & ATTACK</span>
+                                <span className="block text-cyan-400">LIFECYCLE +</span>
+                                <span className="block text-cyan-400">THREAT SCENARIO</span>
+                            </h2>
+                        </div>
 
-            {/* TTPs Section — Full width list */}
-            <div className="max-w-6xl mx-auto px-4 mb-20">
+                        <div className="relative h-full min-h-[300px] rounded-3xl overflow-hidden group">
+                            <img
+                                src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop"
+                                alt="Cyber threat scenario"
+                                className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-900/80 to-transparent"></div>
+                        </div>
+                    </div>
+
+                    {/* Scenario Cards (Slide 4 bottom) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
+                        <div className="bg-[#1a1a1a] p-8 text-center flex flex-col items-center justify-center aspect-square md:aspect-auto md:h-48 group hover:bg-[#252525] transition-colors">
+                            <FileText size={40} className="text-white mb-4 stroke-1" />
+                            <h4 className="text-white font-bold">Mandiant<br />Analysis</h4>
+                        </div>
+                        <div className="bg-gradient-to-b from-[#0055ff] to-[#00d4ff] p-8 text-center flex flex-col items-center justify-center md:h-48 shadow-[0_0_30px_rgba(0,212,255,0.3)]">
+                            <ShieldAlert size={40} className="text-white mb-4 stroke-1" />
+                            <h4 className="text-white font-bold">2017 Cyber<br />Attack</h4>
+                        </div>
+                        <div className="bg-[#1a1a1a] p-8 text-center flex flex-col items-center justify-center md:h-48 group hover:bg-[#252525] transition-colors">
+                            <Zap size={40} className="text-white mb-4 stroke-1" />
+                            <h4 className="text-white font-bold">Energy<br />Company</h4>
+                        </div>
+                    </div>
+
+                    <div className="text-center">
+                        <p className="text-sm text-gray-500 font-mono tracking-widest uppercase">
+                            Pablo Rosales & Juan David Vintimilla
+                        </p>
+                    </div>
+                </motion.div>
+
+                {/* ─── SLIDES 5 & 6: APT 35 TECHNIQUES ─── */}
                 <motion.div
                     initial={{ opacity: 0, y: 40 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.8 }}
                 >
-                    <h3 className="text-2xl font-bold text-red-400 mb-8 font-mono tracking-tight">TTPs (Tactics, Techniques & Procedures)</h3>
-                    <div className="space-y-1">
-                        {ttps.map((t, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, x: -20 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: i * 0.06 }}
-                                className="group bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.05] hover:border-red-500/20 rounded-xl p-5 transition-all duration-300 cursor-default"
-                            >
-                                <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
-                                    <span className="font-mono text-xs text-red-400 bg-red-500/10 px-3 py-1 rounded-full w-fit flex-shrink-0">{t.id}</span>
-                                    <span className="font-mono text-xs text-gray-500 w-32 flex-shrink-0">{t.tactic}</span>
-                                    <span className="text-white font-semibold w-48 flex-shrink-0">{t.name}</span>
-                                    <span className="text-gray-400 text-sm leading-relaxed">{t.desc}</span>
-                                </div>
-                            </motion.div>
+                    <div className="flex items-center gap-6 mb-16">
+                        <div className="h-px bg-cyan-500/50 flex-1"></div>
+                        <h3 className="text-3xl md:text-5xl font-bold text-center uppercase tracking-tight">
+                            <span className="text-white">APT 35</span> <span className="text-cyan-400">Techniques</span>
+                        </h3>
+                        <div className="h-px bg-cyan-500/50 flex-1"></div>
+                    </div>
+
+                    {/* Row 1 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        {techniquesPart1.map((t, i) => (
+                            <TTPCard key={i} {...t} delay={i * 0.1} />
                         ))}
                     </div>
-                </motion.div>
-            </div>
 
-            {/* Software Section — Cards */}
-            <div className="max-w-6xl mx-auto px-4">
+                    {/* Row 2 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {techniquesPart2.map((t, i) => (
+                            <TTPCard key={i} {...t} delay={0.4 + (i * 0.1)} />
+                        ))}
+                    </div>
+
+                </motion.div>
+
+                {/* ─── SLIDE 7: SOFTWARE ─── */}
                 <motion.div
                     initial={{ opacity: 0, y: 40 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.8 }}
+                    className="mt-24"
                 >
-                    <h3 className="text-2xl font-bold text-cyan-400 mb-8 font-mono tracking-tight">Software & Tools</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {software.map((s, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: i * 0.1 }}
-                                className="bg-white/[0.03] border border-cyan-500/10 hover:border-cyan-500/30 rounded-2xl p-6 group hover:bg-cyan-500/[0.03] transition-all duration-300"
-                            >
-                                <span className="font-mono text-xs text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full">{s.id}</span>
-                                <h4 className="text-xl font-bold text-white mt-4 mb-2">{s.name}</h4>
-                                <p className="text-gray-400 text-sm leading-relaxed">{s.desc}</p>
-                            </motion.div>
-                        ))}
+                    <div className="flex items-center gap-6 mb-16">
+                        <div className="h-px bg-cyan-500/50 flex-1"></div>
+                        <h3 className="text-3xl md:text-5xl font-bold text-center uppercase tracking-tight">
+                            <span className="text-white">APT 35</span> <span className="text-cyan-400">Software</span>
+                        </h3>
+                        <div className="h-px bg-cyan-500/50 flex-1"></div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {/* 1. PupyRAT - Dark */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0 }}
+                            className="bg-[#1a1a1a] p-8 flex flex-col items-center text-center h-full group hover:bg-[#252525] transition-colors"
+                        >
+                            <h4 className="text-white font-bold text-lg mb-4">S0192 – Pupy<br />(PupyRAT)</h4>
+                            <p className="text-gray-400 text-sm leading-relaxed">
+                                A modular RAT/backdoor used for remote access and control once executed on a host.
+                            </p>
+                        </motion.div>
+
+                        {/* 2. Mimikatz - Gradient */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.1 }}
+                            className="bg-gradient-to-b from-[#0055ff] to-[#00d4ff] p-8 flex flex-col items-center text-center h-full shadow-[0_0_30px_rgba(0,212,255,0.2)]"
+                        >
+                            <h4 className="text-white font-bold text-lg mb-4">S0002 – Mimikatz</h4>
+                            <p className="text-white text-sm leading-relaxed font-medium">
+                                Credential dumping tool used to extract credentials from Windows—commonly tied to LSASS dumping.
+                            </p>
+                        </motion.div>
+
+                        {/* 3. PsExec - Gradient */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.2 }}
+                            className="bg-gradient-to-b from-[#0055ff] to-[#00d4ff] p-8 flex flex-col items-center text-center h-full shadow-[0_0_30px_rgba(0,212,255,0.2)]"
+                        >
+                            <h4 className="text-white font-bold text-lg mb-4">S0029 – PsExec</h4>
+                            <p className="text-white text-sm leading-relaxed font-medium">
+                                PsExec (Microsoft Sysinternals) is a remote execution utility used to run commands on remote Windows hosts, often to enable lateral movement.
+                            </p>
+                        </motion.div>
+
+                        {/* 4. PowerShell - Dark */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.3 }}
+                            className="bg-[#1a1a1a] p-8 flex flex-col items-center text-center h-full group hover:bg-[#252525] transition-colors"
+                        >
+                            <h4 className="text-white font-bold text-lg mb-4">T1059.001 –<br />PowerShell</h4>
+                            <p className="text-gray-400 text-sm leading-relaxed">
+                                Not a “software entry” but a key execution method: PowerShell is used to run commands and administrative actions.
+                            </p>
+                        </motion.div>
                     </div>
                 </motion.div>
+
             </div>
         </section>
     );

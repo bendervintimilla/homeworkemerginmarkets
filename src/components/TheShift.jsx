@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Crosshair, Globe, ArrowRight, Users, Brain, TrendingUp } from 'lucide-react';
+import { Crosshair, Globe, ArrowRight, Users, Brain, TrendingUp, Target, Shield } from 'lucide-react';
 
+/* ─────────── Reusable Card ─────────── */
 const Card = ({ title, subtitle, details, icon: Icon, delay }) => (
     <motion.div
         initial={{ opacity: 0, y: 50 }}
@@ -32,18 +33,23 @@ const Card = ({ title, subtitle, details, icon: Icon, delay }) => (
     </motion.div>
 );
 
-const EvolutionItem = ({ title, desc, delay }) => (
+/* ─────────── Targeting Column ─────────── */
+const TargetColumn = ({ title, items, color, delay }) => (
     <motion.div
-        initial={{ opacity: 0, x: -30 }}
-        whileInView={{ opacity: 1, x: 0 }}
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.6, delay, ease: "easeOut" }}
-        className="flex gap-5 items-start"
+        transition={{ duration: 0.6, delay }}
+        className="flex-1"
     >
-        <div className="w-3 h-3 rounded-full bg-red-500 mt-2 flex-shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
-        <div>
-            <h4 className="text-white font-semibold text-lg mb-1">{title}</h4>
-            <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
+        <p className={`text-xs font-mono ${color} tracking-widest uppercase mb-6`}>{title}</p>
+        <div className="space-y-4">
+            {items.map((item, i) => (
+                <div key={i} className="flex gap-4 items-start">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0 shadow-[0_0_6px_rgba(239,68,68,0.4)]"></div>
+                    <span className="text-gray-300 text-sm leading-relaxed">{item}</span>
+                </div>
+            ))}
         </div>
     </motion.div>
 );
@@ -52,29 +58,37 @@ const ThreatProfile = () => {
     return (
         <section className="py-32 px-4 relative">
             <div className="max-w-7xl mx-auto">
+                {/* Section Header */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    className="text-center mb-24"
+                    className="text-center mb-6"
                 >
-                    <h2 className="text-4xl md:text-5xl font-bold mb-6">Threat Profile</h2>
-                    <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-                        An Iranian state-linked APT active since 2011, conducting long-term cyber espionage aligned with Iran's geopolitical and national security objectives — not financial crime.
-                    </p>
+                    <p className="text-xs font-mono text-red-400 tracking-[0.3em] uppercase mb-4">1 · Strategic Overview</p>
+                    <h2 className="text-4xl md:text-5xl font-bold mb-4">The Iranian Nexus</h2>
+                    <p className="text-sm text-gray-600 font-mono">Joyce Eskafi</p>
                 </motion.div>
 
-                {/* Origin & Targets Cards */}
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    className="text-xl text-gray-400 max-w-3xl mx-auto text-center mb-24"
+                >
+                    APT35 is not noisy or destructive — it is patient, targeted, and strategic.
+                </motion.p>
+
+                {/* Origin & Attribution + Why APT35 Matters Now */}
                 <div className="flex flex-col md:flex-row gap-8 items-stretch mb-24">
                     <Card
                         title="Origin & Attribution"
-                        subtitle="Iranian state-sponsored group linked to the Islamic Revolutionary Guard Corps (IRGC). First gained widespread attention in 2014."
+                        subtitle="Iranian state-linked APT, active since 2011. Focus: intelligence collection & strategic influence."
                         details={[
-                            "Also known as: Charming Kitten",
-                            "Alias: Phosphorus / TA453",
-                            "Alias: Mint Sandstorm (Microsoft)",
-                            "Alias: ITG18 / Magic Hound / Newscaster",
-                            "Active since: ~2011",
+                            "Alias: Charming Kitten",
+                            "Alias: Phosphorus",
+                            "Alias: Mint Sandstorm",
+                            "Alias: ITG18",
                         ]}
                         icon={Crosshair}
                         delay={0}
@@ -92,22 +106,20 @@ const ThreatProfile = () => {
                     </div>
 
                     <Card
-                        title="Targets & Motivation"
-                        subtitle="Strategic intelligence collection against high-value sectors — primarily in the U.S., Israel, and the Middle East."
+                        title="Why APT35 Matters Now"
+                        subtitle="Blends cyber operations with social engineering. Targets people first, systems second."
                         details={[
-                            "Government & diplomatic entities",
-                            "Defense Industrial Base & energy",
-                            "Think tanks & nuclear policy institutions",
-                            "Telecom & logistics / transportation",
-                            "Biotech, pharma & academic research",
-                            "Journalists, activists & dissidents",
+                            "Social engineering first — not exploit-first",
+                            "Fake personas (journalists, academics)",
+                            "Trust-building over time",
+                            "Credential theft as primary objective",
                         ]}
-                        icon={Globe}
+                        icon={Brain}
                         delay={0.2}
                     />
                 </div>
 
-                {/* Evolution of Targeting */}
+                {/* Targeting & Tactics — 3-column layout matching PPTX Slide 3 */}
                 <motion.div
                     initial={{ opacity: 0, y: 40 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -117,94 +129,57 @@ const ThreatProfile = () => {
                 >
                     <div className="flex items-center gap-4 mb-10">
                         <div className="p-3 rounded-2xl bg-white/5">
-                            <TrendingUp size={24} className="text-red-400" />
+                            <Target size={24} className="text-red-400" />
                         </div>
-                        <h3 className="text-3xl md:text-4xl font-bold">Evolution of Targeting</h3>
+                        <h3 className="text-3xl md:text-4xl font-bold">Targeting & Tactics</h3>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8">
-                        {/* Left: Foundational */}
-                        <div>
-                            <p className="text-xs font-mono text-red-400 tracking-widest uppercase mb-6">Foundational Focus (Ongoing)</p>
-                            <div className="space-y-6">
-                                <EvolutionItem
-                                    title="Domestic Surveillance"
-                                    desc="Consistently targets activists, human rights defenders, journalists, and political dissidents to identify, track, and suppress opposition."
-                                    delay={0}
-                                />
-                                <EvolutionItem
-                                    title="AI-Enhanced Lures"
-                                    desc="Utilizes AI-generated content to increase the success rate of social engineering operations against domestic targets."
-                                    delay={0.1}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Right: Strategic */}
-                        <div>
-                            <p className="text-xs font-mono text-cyan-400 tracking-widest uppercase mb-6">Strategic Expansion (Modern)</p>
-                            <div className="space-y-6">
-                                <EvolutionItem
-                                    title="Government & Diplomacy"
-                                    desc="Foreign policy and intelligence espionage across the U.S., Israel, and the Middle East."
-                                    delay={0.15}
-                                />
-                                <EvolutionItem
-                                    title="Think Tanks & Policy"
-                                    desc="Institutions focused on Middle Eastern security and nuclear policy — a supply chain for state secrets."
-                                    delay={0.25}
-                                />
-                                <EvolutionItem
-                                    title="Critical Infrastructure"
-                                    desc="Defense Industrial Base, telecommunications, and logistics/transportation sectors."
-                                    delay={0.35}
-                                />
-                                <EvolutionItem
-                                    title="Academic & Scientific"
-                                    desc="Emphasis on biotechnology, pharmaceuticals, and nuclear engineering research."
-                                    delay={0.45}
-                                />
-                            </div>
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-8">
+                        <TargetColumn
+                            title="Early Focus"
+                            items={[
+                                "Activists",
+                                "Journalists",
+                                "Political dissidents",
+                            ]}
+                            color="text-red-400"
+                            delay={0}
+                        />
+                        <TargetColumn
+                            title="Expanded Targets"
+                            items={[
+                                "Governments & diplomats",
+                                "Think tanks & policy",
+                                "Defense & Telecom",
+                                "Biotech & Nuclear research",
+                            ]}
+                            color="text-orange-400"
+                            delay={0.15}
+                        />
+                        <TargetColumn
+                            title="Key Tactics"
+                            items={[
+                                "Social engineering first",
+                                "Fake personas (journalists, academics)",
+                                "Trust-building over time",
+                                "Credential theft",
+                            ]}
+                            color="text-cyan-400"
+                            delay={0.3}
+                        />
                     </div>
-                </motion.div>
 
-                {/* Why Relevant Today */}
-                <motion.div
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8 }}
-                    className="max-w-5xl mx-auto"
-                >
-                    <div className="relative glass-panel rounded-3xl border border-white/10 overflow-hidden">
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-red-500 via-orange-500 to-cyan-500"></div>
-                        <div className="p-10 md:p-12">
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="p-3 rounded-2xl bg-white/5">
-                                    <Brain size={24} className="text-orange-400" />
-                                </div>
-                                <h3 className="text-2xl md:text-3xl font-bold">Why APT35 Is Relevant Today</h3>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                <div>
-                                    <Users size={20} className="text-red-400 mb-3" />
-                                    <h4 className="text-white font-semibold mb-2">People-First Strategy</h4>
-                                    <p className="text-gray-400 text-sm leading-relaxed">Impersonates trusted figures — journalists, academics, professionals — to build rapport before striking. Human behavior is exploited before technical systems.</p>
-                                </div>
-                                <div>
-                                    <Globe size={20} className="text-orange-400 mb-3" />
-                                    <h4 className="text-white font-semibold mb-2">Persona Engineering</h4>
-                                    <p className="text-gray-400 text-sm leading-relaxed">Exploits publicly available information to craft realistic fake identities. Establishes trust over time, then harvests credentials or delivers payloads.</p>
-                                </div>
-                                <div>
-                                    <Brain size={20} className="text-cyan-400 mb-3" />
-                                    <h4 className="text-white font-semibold mb-2">Patient & Strategic</h4>
-                                    <p className="text-gray-400 text-sm leading-relaxed">Not noisy or destructive. Prioritizes long-term access and intelligence collection over immediate disruption — combining technical capability with psychological manipulation.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Arrow + conclusion */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.5 }}
+                        className="mt-10 flex items-center gap-3"
+                    >
+                        <ArrowRight size={18} className="text-red-400" />
+                        <span className="text-gray-400 text-sm font-mono italic">Patient, targeted, strategic</span>
+                    </motion.div>
                 </motion.div>
 
             </div>
