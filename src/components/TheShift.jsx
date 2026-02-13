@@ -83,12 +83,14 @@ const ThreatProfile = () => {
                 <div className="flex flex-col md:flex-row gap-8 items-stretch mb-24">
                     <Card
                         title="Origin & Attribution"
-                        subtitle="Iranian state-linked APT, active since 2011. Focus: intelligence collection & strategic influence."
+                        subtitle=""
                         details={[
-                            "Alias: Charming Kitten",
-                            "Alias: Phosphorus",
-                            "Alias: Mint Sandstorm",
-                            "Alias: ITG18",
+                            "Iranian state-sponsored APT",
+                            "Active since 2011",
+                            "First gained public attention in 2014",
+                            "Focus: Cyber espionage",
+                            "Long-term intelligence collection",
+                            "Supports Iran’s geopolitical objectives",
                         ]}
                         icon={Crosshair}
                         delay={0}
