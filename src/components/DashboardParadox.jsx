@@ -45,7 +45,7 @@ const KillChainWalkthrough = () => {
             desc: "The victim downloaded a resume 'lure' document, which silently deployed PupyRAT and a custom backdoor called BROKEYOLK. First foothold established.",
             icon: Anchor,
             color: "bg-blue-500",
-            image: "/assets/killchain_phase2.png",
+            image: "/assets/killchain_phase_foothold_v2.png",
             techniques: ["T1204.002 — Malicious File", "S0192 — PupyRAT Payload"]
         },
         {
@@ -68,7 +68,7 @@ const KillChainWalkthrough = () => {
         },
         {
             time: "PHASE 5",
-            title: "LATERAL MOVEMENT",
+            title: "LATERAL MOVEMENT (SCALING)",
             desc: "Using PsExec to execute batch files that ran Mimikatz across multiple systems simultaneously. Scaling access exponentially.",
             icon: Network,
             color: "bg-orange-500",
@@ -77,7 +77,7 @@ const KillChainWalkthrough = () => {
         },
         {
             time: "PHASE 6",
-            title: "INTERNAL COLLECTION",
+            title: "intelligence collection",
             desc: "PowerShell used to manipulate Exchange Email Delegate permissions. Accessing executive mailboxes via OWA without new malware.",
             icon: Eye,
             color: "bg-red-500",
@@ -86,7 +86,7 @@ const KillChainWalkthrough = () => {
         },
         {
             time: "PHASE 7",
-            title: "CLEANUP",
+            title: "CLEANUP & EVASION",
             desc: "Ruthlessly deleted tracks. Mimikatz binaries removed, event logs scrubbed. Forensic reconstruction nearly impossible.",
             icon: Trash2,
             color: "bg-red-700",
