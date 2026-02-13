@@ -63,7 +63,7 @@ const AccountabilityItem = ({ title, desc }) => {
 };
 
 /* ────────────────────────── Defense Pillar ────────────────────────── */
-const Pillar = ({ title, icon: Icon, desc, color, delay, number }) => (
+const Pillar = ({ title, subtitle, icon: Icon, desc, color, delay, number }) => (
     <motion.div
         initial={{ y: 60, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
@@ -77,6 +77,9 @@ const Pillar = ({ title, icon: Icon, desc, color, delay, number }) => (
             <div className={`p-3 rounded-2xl bg-white/[0.05] mb-6 group-hover:scale-110 transition-transform duration-300`}>
                 <Icon size={24} className="text-gray-300" />
             </div>
+            {subtitle && (
+                <p className="text-xs font-mono uppercase tracking-wider text-white/50 mb-2">{subtitle}</p>
+            )}
             <h3 className="text-xl font-semibold mb-3 text-white tracking-tight">{title}</h3>
             <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
         </div>
@@ -320,6 +323,7 @@ const GovernanceAndDefense = () => {
                 <div className="flex flex-col md:flex-row gap-5 max-w-5xl mx-auto mb-5">
                     <Pillar
                         number="A"
+                        subtitle="Prevent entry"
                         title="Identity-Centric Security"
                         desc="Stop 'Valid Accounts' from being a free pass. Phishing-resistant MFA (FIDO2/passkeys), Conditional Access enforcement against impossible travel, and continuous credential monitoring."
                         icon={Fingerprint}
@@ -328,6 +332,7 @@ const GovernanceAndDefense = () => {
                     />
                     <Pillar
                         number="B"
+                        subtitle="Limit damage if they get in"
                         title="Governance & Oversight"
                         desc="High-impact actions require ownership & approval. Assign asset & control owners. PAM + Just-In-Time admin elevation. Defined escalation paths — security must isolate accounts immediately when identity trust is broken."
                         icon={Shield}
@@ -340,6 +345,7 @@ const GovernanceAndDefense = () => {
                 <div className="flex flex-col md:flex-row gap-5 max-w-5xl mx-auto mb-8">
                     <Pillar
                         number="C"
+                        subtitle="Catch them moving"
                         title="Detection & Response"
                         desc="From malware detection to behavior detection. Detect patterns: delegate permissions + bulk reads, PsExec bursts, credential dumping. Logs → Enforced Auditing — the failure wasn't missing logs, it was missing mandated review."
                         icon={Eye}
@@ -348,6 +354,7 @@ const GovernanceAndDefense = () => {
                     />
                     <Pillar
                         number="D"
+                        subtitle="Keep the environment clean"
                         title="Compliance & Assurance"
                         desc="Prove controls work — regularly, with evidence. Kill chain control testing via tabletop + technical validation. Routine audits of mailbox delegation, role assignments, and CA exceptions."
                         icon={ClipboardCheck}
@@ -356,6 +363,7 @@ const GovernanceAndDefense = () => {
                     />
                     <Pillar
                         number="E"
+                        subtitle="Maintain organizational trust"
                         title="Communication & Trust"
                         desc="Pre-approved comms playbooks — what, when, and who approves. No delays during active intrusion. Measurable assurance: communicate concrete actions tied to observed attack methods."
                         icon={Radio}

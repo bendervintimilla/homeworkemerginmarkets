@@ -134,7 +134,7 @@ const ThreatProfile = () => {
                         <h3 className="text-3xl md:text-4xl font-bold">Targeting & Tactics</h3>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                         <TargetColumn
                             title="Early Focus"
                             items={[
@@ -155,17 +155,6 @@ const ThreatProfile = () => {
                             ]}
                             color="text-orange-400"
                             delay={0.15}
-                        />
-                        <TargetColumn
-                            title="Key Tactics"
-                            items={[
-                                "Social engineering first",
-                                "Fake personas (journalists, academics)",
-                                "Trust-building over time",
-                                "Credential theft",
-                            ]}
-                            color="text-cyan-400"
-                            delay={0.3}
                         />
                     </div>
 
