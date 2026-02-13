@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crosshair, Key, Network, Trash2 } from 'lucide-react';
+import { Key, Network, Trash2, Mail, Terminal, Anchor, ChevronsUp, Ghost, Server, Eye } from 'lucide-react';
 
 const EventPoint = ({ icon: Icon, time, title, isActive, onClick, color }) => (
     <motion.button
         onClick={onClick}
-        className="relative flex flex-col items-center cursor-pointer group outline-none"
+        className="relative flex flex-col items-center cursor-pointer group outline-none min-w-[100px]"
         whileHover={{ y: -5 }}
         whileTap={{ scale: 0.95 }}
     >
-        <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 transition-all duration-500 ${isActive ? `${color} text-white shadow-lg scale-110` : 'bg-gray-900 text-gray-500 border border-gray-800 hover:border-gray-600'}`}>
-            <Icon size={28} />
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 transition-all duration-500 z-10 relative ${isActive ? `${color} text-white shadow-lg scale-110` : 'bg-gray-900 text-gray-500 border border-gray-800 hover:border-gray-600'}`}>
+            <Icon size={20} />
         </div>
-        <div className="text-center w-40">
-            <span className={`font-mono text-xs mb-2 block transition-colors ${isActive ? 'text-red-400' : 'text-gray-600'}`}>{time}</span>
-            <h4 className={`font-bold text-sm transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}`}>{title}</h4>
+        <div className="text-center w-28">
+            <span className={`font-mono text-[10px] mb-1 block transition-colors uppercase ${isActive ? 'text-red-400' : 'text-gray-600'}`}>{time}</span>
+            <h4 className={`font-bold text-[10px] md:text-xs leading-tight transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}`}>{title}</h4>
         </div>
 
         {isActive && (
             <motion.div
                 layoutId="activeDot"
-                className="absolute -bottom-8 w-2 h-2 bg-white rounded-full"
+                className="absolute -bottom-6 w-1.5 h-1.5 bg-white rounded-full"
             />
         )}
     </motion.button>
@@ -31,39 +31,66 @@ const KillChainWalkthrough = () => {
 
     const steps = [
         {
-            time: "PHASES 1–2",
+            time: "PHASE 1",
             title: "INITIAL ACCESS",
-            desc: "Spearphishing link (T1566.002) targets an energy company employee via a tailored recruiting email. Victim trusts the domain — PupyRAT delivered via resume lure. A custom backdoor (BROKEYOLK) ensures persistent access with no noisy exploits.",
-            icon: Crosshair,
-            color: "bg-green-600",
+            desc: "APT35 targeted a specific employee with a tailored recruiting email—social engineering at its finest. They didn't use a zero-day exploit; they used trust.",
+            icon: Mail,
+            color: "bg-gray-500",
             image: "/assets/killchain_phase1.png",
-            techniques: ["T1566.002 — Spearphishing Link", "T1189 — Drive-by Compromise", "S0192 — PupyRAT C2 Channel"]
+            techniques: ["T1566.002 — Spearphishing Link", "Social Engineering"]
         },
         {
-            time: "PHASES 3–4",
-            title: "CREDENTIAL THEFT",
-            desc: "LSASS memory dumped via Mimikatz — domain-level credentials harvested enabling broad authentication. Stolen credentials used to log into VPN and O365 as a legitimate employee. Traffic looks completely normal.",
-            icon: Key,
-            color: "bg-yellow-600",
+            time: "PHASE 2",
+            title: "FOOTHOLD & PERSISTENCE MECHANISMS",
+            desc: "The victim downloaded a resume 'lure' document, which silently deployed PupyRAT and a custom backdoor called BROKEYOLK. First foothold established.",
+            icon: Anchor,
+            color: "bg-blue-500",
             image: "/assets/killchain_phase2.png",
-            techniques: ["T1003.001 — LSASS Memory Dump", "S0002 — Mimikatz", "T1078 — Valid Accounts Abuse"]
+            techniques: ["T1204.002 — Malicious File", "S0192 — PupyRAT Payload"]
         },
         {
-            time: "PHASES 5–6",
+            time: "PHASE 3",
+            title: "CREDENTIAL THEFT",
+            desc: "Mimikatz deployed to dump LSASS memory. Domain-level credentials harvested. This is the pivot point from outsider to 'insider'.",
+            icon: Key,
+            color: "bg-yellow-500",
+            image: "/assets/killchain_phase2.png",
+            techniques: ["T1003.001 — LSASS Memory Dump", "S0002 — Mimikatz"]
+        },
+        {
+            time: "PHASE 4",
+            title: "USE OF VALID ACCOUNTS",
+            desc: "Using stolen credentials to log into corporate VPN and Office 365. To the security team, this traffic looked completely normal.",
+            icon: ChevronsUp,
+            color: "bg-cyan-500",
+            image: "/assets/killchain_phase_privilege_escalation.png",
+            techniques: ["T1078 — Valid Accounts Abuse", "VPN & O365 Access"]
+        },
+        {
+            time: "PHASE 5",
             title: "LATERAL MOVEMENT",
-            desc: "PsExec deploys batch files running Mimikatz across multiple systems via service execution. Access scales exponentially. Exchange permissions manipulated via PowerShell — hundreds of mailboxes accessed through OWA with no additional malware.",
+            desc: "Using PsExec to execute batch files that ran Mimikatz across multiple systems simultaneously. Scaling access exponentially.",
             icon: Network,
-            color: "bg-orange-600",
-            image: "/assets/killchain_phase3.png",
-            techniques: ["T1569.002 — Service Execution", "S0029 — PsExec", "T1098.002 — Email Delegate", "T1114 — Email Collection"]
+            color: "bg-orange-500",
+            image: "/assets/killchain_phase_discovery_lateral.png",
+            techniques: ["T1569.002 — Service Execution", "S0029 — PsExec"]
+        },
+        {
+            time: "PHASE 6",
+            title: "INTERNAL COLLECTION",
+            desc: "PowerShell used to manipulate Exchange Email Delegate permissions. Accessing executive mailboxes via OWA without new malware.",
+            icon: Eye,
+            color: "bg-red-500",
+            image: "/assets/killchain_phase_discovery_lateral.png",
+            techniques: ["T1098.002 — Email Delegate", "T1114 — Email Collection"]
         },
         {
             time: "PHASE 7",
-            title: "CLEANUP & EVASION",
-            desc: "Mimikatz binaries and artifacts deleted from remote systems. Forensic reconstruction severely hindered. The adversary leaves minimal trace — using legitimate tools that blend into normal enterprise activity.",
+            title: "CLEANUP",
+            desc: "Ruthlessly deleted tracks. Mimikatz binaries removed, event logs scrubbed. Forensic reconstruction nearly impossible.",
             icon: Trash2,
-            color: "bg-red-600",
-            image: "/assets/killchain_phase4.png",
+            color: "bg-red-700",
+            image: "/assets/killchain_phase_persistence.png", // Using the chip image for final "logged in" state
             techniques: ["T1070.004 — Indicator Removal", "File Deletion Post-Exploitation", "Anti-Forensic Operations"]
         }
     ];
@@ -127,7 +154,8 @@ const KillChainWalkthrough = () => {
 
                             {/* Text content */}
                             <div className="w-full md:w-1/2 text-left">
-                                <div className={`font-mono text-sm font-bold mb-3 px-3 py-1 rounded-full inline-block bg-white/5 ${activeStep === 3 ? 'text-red-400' : activeStep === 2 ? 'text-orange-400' : activeStep === 1 ? 'text-yellow-400' : 'text-green-400'}`}>
+                                <div className={`font-mono text-sm font-bold mb-3 px-3 py-1 rounded-full inline-block bg-white/5 
+                                    ${activeStep >= 5 ? 'text-red-400' : activeStep >= 3 ? 'text-orange-400' : activeStep >= 1 ? 'text-blue-400' : 'text-gray-400'}`}>
                                     {steps[activeStep].time}
                                 </div>
                                 <h3 className="text-3xl md:text-4xl font-bold mb-6 text-white leading-tight">{steps[activeStep].title}</h3>
@@ -145,7 +173,7 @@ const KillChainWalkthrough = () => {
                                     ))}
                                 </div>
 
-                                {activeStep === 3 && (
+                                {activeStep === 6 && (
                                     <motion.div
                                         initial={{ opacity: 0, height: 0 }}
                                         animate={{ opacity: 1, height: 'auto' }}
