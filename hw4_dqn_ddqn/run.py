@@ -31,12 +31,16 @@ def _resolve_env(base: str, version_preference: list[str]) -> str:
 
 def _default_cfg(env_id: str) -> DQNConfig:
     if env_id.startswith("CartPole"):
+        # CartPole + DQN is famously unstable: the Q values blow up once the
+        # agent gets long episodes, causing catastrophic forgetting. The fix
+        # is conservative: small LR, slow target-net sync, longer eps decay,
+        # train a bit less aggressively.
         return DQNConfig(
             obs_dim=4, n_actions=2,
-            hidden=(64, 64), lr=1e-3, gamma=0.99,
-            buffer_size=50_000, batch_size=64, learning_starts=500,
-            target_update_freq=200, train_freq=1,
-            eps_start=1.0, eps_end=0.05, eps_decay_steps=10_000,
+            hidden=(64, 64), lr=5e-4, gamma=0.99,
+            buffer_size=50_000, batch_size=64, learning_starts=1_000,
+            target_update_freq=500, train_freq=4,
+            eps_start=1.0, eps_end=0.05, eps_decay_steps=20_000,
         )
     elif env_id.startswith("LunarLander"):
         return DQNConfig(
