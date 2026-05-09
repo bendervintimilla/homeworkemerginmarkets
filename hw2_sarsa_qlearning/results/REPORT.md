@@ -5,7 +5,7 @@
 | Entorno | SARSA return | SARSA len | Q-Learn return | Q-Learn len |
 |---|---|---|---|---|
 | CliffWalking-v1 | -17.00 | 17.00 | -13.00 | 13.00 |
-| Taxi-v4 | 7.93 | 13.07 | 7.97 | 13.03 |
+| Taxi-v3 | 7.93 | 13.07 | 7.97 | 13.03 |
 
 ## Política aprendida en CliffWalking
 

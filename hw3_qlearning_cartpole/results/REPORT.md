@@ -4,11 +4,11 @@ Bins por dimensión (x, x_dot, theta, theta_dot): (3, 3, 12, 12)
 Estados totales: 1296
 alpha=0.1, gamma=0.99, episodios=15000
 
-Retorno medio últimos 100 episodios entrenamiento: 390.28
-Retorno medio evaluación greedy (100 ep)        : 489.05
-Longitud media en evaluación                    : 489.05
+Retorno medio últimos 100 episodios entrenamiento: 256.46
+Retorno medio evaluación greedy (100 ep)        : 291.63
+Longitud media en evaluación                    : 291.63
 
-**¿Resuelto?** (489.1 >= 195) -> True
+**¿Resuelto?** (291.6 >= 195) -> True
 
 ## Decisiones de diseño
 

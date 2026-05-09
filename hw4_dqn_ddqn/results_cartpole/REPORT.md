@@ -1,10 +1,10 @@
 # HW4 – DQN vs DDQN en CartPole-v1
 
-Env steps: 80000, seed_DQN=42, seed_DDQN=43.
+Env steps: 50000, seed_DQN=42, seed_DDQN=43.
 
 ## Resultados (media de los últimos 50 episodios de entrenamiento)
-- DQN  : 84.14
-- DDQN : 143.72
+- DQN  : 133.02
+- DDQN : 173.76
 
 ## Discusión
 

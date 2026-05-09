@@ -1,10 +1,10 @@
 # HW5 – PPO en CartPole-v1
 
-Total env-steps: 80000
-Rollout: 1024, Epochs: 4, Mini-batch: 64, LR: 0.0003
+Total env-steps: 100000
+Rollout: 1024, Epochs: 10, Mini-batch: 64, LR: 0.0003
 GAE: gamma=0.99, lambda=0.95, clip=0.2
 
-Retorno medio últimos 100 episodios: **232.81**
+Retorno medio últimos 100 episodios: **488.45**
 "Resuelto" en LunarLander es R >= 200.
 
 ## Notas de implementación
