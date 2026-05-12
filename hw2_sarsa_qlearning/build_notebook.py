@@ -226,25 +226,44 @@ print(f'|S| = {env.observation_space.n}, |A| = {env.action_space.n}')
 rand_ret, rand_len = evaluate_random(env, episodes=500, seed=999)
 print(f'Random baseline: mean reward = {rand_ret.mean():.2f}, mean length = {rand_len.mean():.1f}')
 
-# Train SARSA
-print('\\nTraining SARSA on Taxi (10k episodes)...')
-sarsa_taxi = sarsa(env, num_episodes=10_000, alpha=0.1, gamma=0.99, seed=42)
+# Train SARSA over 3 seeds for statistical robustness, 20k episodes each (60k total).
+SEEDS = [42, 123, 456]
+N_EP_TAXI = 20_000
+print(f'\\nTraining SARSA on Taxi — {len(SEEDS)} seeds × {N_EP_TAXI} episodes = {len(SEEDS)*N_EP_TAXI} total...')
+sarsa_taxi_runs = []
+for s in SEEDS:
+    print(f'  seed {s}...', end='', flush=True)
+    sarsa_taxi_runs.append(sarsa(env, num_episodes=N_EP_TAXI, alpha=0.1, gamma=0.99, seed=s))
+    print(' done')
 
-# Evaluate
+# Use first seed (42) as the canonical Q-table for visualisations; aggregate the
+# training curves across seeds for the learning-curve plot.
+sarsa_taxi = sarsa_taxi_runs[0]
+
+# Evaluate each seed's policy independently and report mean ± std across seeds.
+sarsa_evals = np.array([evaluate_greedy(env, r.Q, episodes=500, seed=123)[0].mean() for r in sarsa_taxi_runs])
+print(f'\\nSARSA learned policy (mean across {len(SEEDS)} seeds):')
+print(f'  reward = {sarsa_evals.mean():.2f} ± {sarsa_evals.std():.2f}')
+print(f'  per-seed: {[f\"{x:.2f}\" for x in sarsa_evals]}')
+print(f'  improvement over random: {sarsa_evals.mean() - rand_ret.mean():+.1f}')
+
+# Single-seed (42) detailed eval for downstream cells
 sarsa_eval_ret, sarsa_eval_len = evaluate_greedy(env, sarsa_taxi.Q, episodes=500, seed=123)
-print(f'SARSA learned policy: mean reward = {sarsa_eval_ret.mean():.2f} ± {sarsa_eval_ret.std():.2f}')
-print(f'                       mean length = {sarsa_eval_len.mean():.1f}')
-print(f'                       improvement over random: '
-      f'{sarsa_eval_ret.mean() - rand_ret.mean():+.1f}')
 """))
 
 CELLS.append(code(
-"""# Visualise SARSA Taxi training curve
+"""# Visualise SARSA Taxi training curve — mean ± std across 3 seeds
 fig, ax = plt.subplots(figsize=(9, 4))
-ma = smooth(sarsa_taxi.returns, 200)
-ax.plot(np.arange(len(ma)) + 200 - 1, ma, color='C0', linewidth=2, label='SARSA')
+sarsa_returns_stack = np.stack([r.returns for r in sarsa_taxi_runs])  # (3 seeds, N episodes)
+window = 200
+smoothed = np.stack([smooth(s, window) for s in sarsa_returns_stack])
+mean_curve = smoothed.mean(axis=0)
+std_curve = smoothed.std(axis=0)
+x = np.arange(len(mean_curve)) + window - 1
+ax.plot(x, mean_curve, color='C0', linewidth=2, label='SARSA (mean of 3 seeds)')
+ax.fill_between(x, mean_curve - std_curve, mean_curve + std_curve, color='C0', alpha=0.20, label='±1 std across seeds')
 ax.axhline(rand_ret.mean(), color='gray', linestyle='--', label=f'Random baseline ({rand_ret.mean():.1f})')
-ax.set_title(f'{TAXI_ID} — SARSA training return (moving avg)')
+ax.set_title(f'{TAXI_ID} — SARSA training return (200-ep MA, 3 seeds)')
 ax.set_xlabel('Episode'); ax.set_ylabel('Return')
 ax.legend(); ax.grid(alpha=0.3)
 plt.show()
@@ -282,33 +301,48 @@ of $Q(s', a')$ where $a'$ is the ε-greedy choice.
 
 CELLS.append(code(
 """env = gym.make(TAXI_ID)
-print('Training Q-Learning on Taxi (10k episodes)...')
-ql_taxi = q_learning(env, num_episodes=10_000, alpha=0.1, gamma=0.99, seed=42)
+print(f'Training Q-Learning on Taxi — {len(SEEDS)} seeds × {N_EP_TAXI} episodes...')
+ql_taxi_runs = []
+for s in SEEDS:
+    print(f'  seed {s}...', end='', flush=True)
+    ql_taxi_runs.append(q_learning(env, num_episodes=N_EP_TAXI, alpha=0.1, gamma=0.99, seed=s))
+    print(' done')
+
+ql_taxi = ql_taxi_runs[0]  # seed 42 as canonical
+
+ql_evals = np.array([evaluate_greedy(env, r.Q, episodes=500, seed=123)[0].mean() for r in ql_taxi_runs])
+print(f'\\nQ-Learning learned policy (mean across {len(SEEDS)} seeds):')
+print(f'  reward = {ql_evals.mean():.2f} ± {ql_evals.std():.2f}')
+print(f'  per-seed: {[f\"{x:.2f}\" for x in ql_evals]}')
 
 ql_eval_ret, ql_eval_len = evaluate_greedy(env, ql_taxi.Q, episodes=500, seed=123)
-print(f'Q-Learning learned policy: mean reward = {ql_eval_ret.mean():.2f} ± {ql_eval_ret.std():.2f}')
-print(f'                            mean length = {ql_eval_len.mean():.1f}')
 """))
 
 CELLS.append(code(
-"""# Compare SARSA vs Q-Learning learning curves on Taxi
-fig, ax = plt.subplots(figsize=(9, 4))
-for res, label, color in [(sarsa_taxi, 'SARSA', 'C0'), (ql_taxi, 'Q-Learning', 'C1')]:
-    ma = smooth(res.returns, 200)
-    ax.plot(np.arange(len(ma)) + 200 - 1, ma, color=color, linewidth=2, label=label)
-ax.axhline(rand_ret.mean(), color='gray', linestyle='--', label=f'Random baseline')
-ax.set_title(f'{TAXI_ID} — SARSA vs Q-Learning (training, 200-ep MA)')
+"""# Compare SARSA vs Q-Learning learning curves on Taxi — mean ± std across 3 seeds
+fig, ax = plt.subplots(figsize=(9, 4.5))
+window = 200
+for runs, label, color in [(sarsa_taxi_runs, 'SARSA', 'C0'),
+                           (ql_taxi_runs, 'Q-Learning', 'C1')]:
+    stack = np.stack([smooth(r.returns, window) for r in runs])
+    m = stack.mean(axis=0); s = stack.std(axis=0)
+    x = np.arange(len(m)) + window - 1
+    ax.plot(x, m, color=color, linewidth=2, label=f'{label} (mean of 3 seeds)')
+    ax.fill_between(x, m - s, m + s, color=color, alpha=0.18)
+ax.axhline(rand_ret.mean(), color='gray', linestyle='--', label='Random baseline')
+ax.set_title(f'{TAXI_ID} — SARSA vs Q-Learning, 3 seeds, ±1 std (200-ep MA)')
 ax.set_xlabel('Episode'); ax.set_ylabel('Return')
-ax.legend(); ax.grid(alpha=0.3)
+ax.legend(loc='lower right'); ax.grid(alpha=0.3)
 plt.show()
 
-# Final evaluation table
 import pandas as pd
 df = pd.DataFrame({
-    'Policy': ['Random baseline', 'SARSA (learned)', 'Q-Learning (learned)'],
-    'Mean reward (eval)': [f'{rand_ret.mean():.2f}', f'{sarsa_eval_ret.mean():.2f}', f'{ql_eval_ret.mean():.2f}'],
-    'Std': [f'±{rand_ret.std():.1f}', f'±{sarsa_eval_ret.std():.1f}', f'±{ql_eval_ret.std():.1f}'],
-    'Mean length': [f'{rand_len.mean():.1f}', f'{sarsa_eval_len.mean():.1f}', f'{ql_eval_len.mean():.1f}'],
+    'Policy': ['Random baseline', 'SARSA (3-seed mean)', 'Q-Learning (3-seed mean)'],
+    'Mean reward': [f'{rand_ret.mean():.2f}', f'{sarsa_evals.mean():.2f}', f'{ql_evals.mean():.2f}'],
+    'Cross-seed std': ['—', f'±{sarsa_evals.std():.2f}', f'±{ql_evals.std():.2f}'],
+    'Per-seed (42, 123, 456)': ['—',
+                                 ', '.join(f'{x:.2f}' for x in sarsa_evals),
+                                 ', '.join(f'{x:.2f}' for x in ql_evals)],
 })
 print(df.to_string(index=False))
 """))
@@ -349,97 +383,68 @@ for exploratory moves that might push it off), while off-policy Q-Learning
 learns the *optimal* path directly along the cliff edge (it doesn't care
 what the behavior policy explores).
 
-**Hyperparameters**:
-- α = 0.5 (high learning rate, justified by short episodes)
+**Hyperparameters** (the PDF allows "fixed or decaying ε" — we use decaying because fixed ε=0.1 with α=0.5 leaves SARSA seed-sensitive: about 1 in 3 seeds gets stuck with a start-state action that loops into the cliff):
+- α = 0.5
 - γ = 0.99
-- ε = 0.1 (fixed)
-- N = **2000 episodes** (the PDF *suggests* 500, but with α=0.5 and ε=0.1
-  500 episodes is too few for SARSA to converge — its policy at the start
-  state still flips into the cliff. 2000 episodes lets the canonical
-  Sutton & Barto §6.5 result emerge cleanly.)
+- ε decays linearly from 1.0 → 0.05 over first 80% of episodes
+- N = **10,000 episodes × 3 seeds = 30,000 episodes per algorithm**
+  (PDF *suggests* 500 but that's insufficient even for Q-Learning to
+  converge reliably across seeds at α=0.5).
 """))
 
 CELLS.append(code(
-"""# Override eps_schedule to use a FIXED epsilon for Cliff Walking (per PDF spec)
-def sarsa_fixed_eps(env, num_episodes, alpha, gamma, eps, max_steps=1000, seed=0):
-    n_states = env.observation_space.n
-    n_actions = env.action_space.n
-    rng = np.random.default_rng(seed)
-    Q = np.zeros((n_states, n_actions))
-    returns = np.zeros(num_episodes, dtype=np.float32)
-    lengths = np.zeros(num_episodes, dtype=np.int32)
-    for ep in range(num_episodes):
-        s, _ = env.reset(seed=int(rng.integers(1 << 31)))
-        a = epsilon_greedy(Q, s, eps, n_actions, rng)
-        ep_ret, steps = 0.0, 0
-        while steps < max_steps:
-            s_next, r, done, truncated, _ = env.step(a)
-            a_next = epsilon_greedy(Q, s_next, eps, n_actions, rng)
-            target = r + gamma * Q[s_next, a_next] * (0.0 if done else 1.0)
-            Q[s, a] += alpha * (target - Q[s, a])
-            s, a = s_next, a_next
-            ep_ret += r
-            steps += 1
-            if done or truncated:
-                break
-        returns[ep] = ep_ret; lengths[ep] = steps
-    return TrainingResult(Q, returns, lengths)
-
-
-def ql_fixed_eps(env, num_episodes, alpha, gamma, eps, max_steps=1000, seed=0):
-    n_states = env.observation_space.n
-    n_actions = env.action_space.n
-    rng = np.random.default_rng(seed)
-    Q = np.zeros((n_states, n_actions))
-    returns = np.zeros(num_episodes, dtype=np.float32)
-    lengths = np.zeros(num_episodes, dtype=np.int32)
-    for ep in range(num_episodes):
-        s, _ = env.reset(seed=int(rng.integers(1 << 31)))
-        ep_ret, steps = 0.0, 0
-        while steps < max_steps:
-            a = epsilon_greedy(Q, s, eps, n_actions, rng)
-            s_next, r, done, truncated, _ = env.step(a)
-            target = r + gamma * Q[s_next].max() * (0.0 if done else 1.0)
-            Q[s, a] += alpha * (target - Q[s, a])
-            s = s_next
-            ep_ret += r
-            steps += 1
-            if done or truncated:
-                break
-        returns[ep] = ep_ret; lengths[ep] = steps
-    return TrainingResult(Q, returns, lengths)
-
-
-env_cliff = gym.make(CLIFF_ID)
+"""env_cliff = gym.make(CLIFF_ID)
 print(f'CliffWalking |S| = {env_cliff.observation_space.n}, |A| = {env_cliff.action_space.n}')
 
-print('Training SARSA on CliffWalking (2000 episodes, alpha=0.5, eps=0.1)...')
-sarsa_cliff = sarsa_fixed_eps(env_cliff, num_episodes=2000, alpha=0.5, gamma=0.99, eps=0.1, seed=42)
+N_EP_CLIFF = 10_000
+print(f'Training SARSA on CliffWalking — {len(SEEDS)} seeds × {N_EP_CLIFF} episodes (decaying eps)...')
+sarsa_cliff_runs = []
+for s in SEEDS:
+    print(f'  seed {s}...', end='', flush=True)
+    sarsa_cliff_runs.append(sarsa(env_cliff, num_episodes=N_EP_CLIFF, alpha=0.5, gamma=0.99,
+                                   eps_start=1.0, eps_end=0.05, decay_frac=0.8, seed=s))
+    print(' done')
+sarsa_cliff = sarsa_cliff_runs[0]  # seed 42 canonical
 
-print('Training Q-Learning on CliffWalking...')
-ql_cliff = ql_fixed_eps(env_cliff, num_episodes=2000, alpha=0.5, gamma=0.99, eps=0.1, seed=42)
+print(f'\\nTraining Q-Learning on CliffWalking — {len(SEEDS)} seeds...')
+ql_cliff_runs = []
+for s in SEEDS:
+    print(f'  seed {s}...', end='', flush=True)
+    ql_cliff_runs.append(q_learning(env_cliff, num_episodes=N_EP_CLIFF, alpha=0.5, gamma=0.99,
+                                     eps_start=1.0, eps_end=0.05, decay_frac=0.8, seed=s))
+    print(' done')
+ql_cliff = ql_cliff_runs[0]
 
-# Evaluate greedy policy
-sarsa_cliff_eval, _ = evaluate_greedy(env_cliff, sarsa_cliff.Q, episodes=500, seed=123)
-ql_cliff_eval, _ = evaluate_greedy(env_cliff, ql_cliff.Q, episodes=500, seed=123)
-print(f'\\nGreedy eval (500 episodes):')
-print(f'  SARSA      : {sarsa_cliff_eval.mean():.2f} ± {sarsa_cliff_eval.std():.2f}')
-print(f'  Q-Learning : {ql_cliff_eval.mean():.2f} ± {ql_cliff_eval.std():.2f}')
-print(f'\\nTraining return (last 50 episodes):')
-print(f'  SARSA      : {sarsa_cliff.returns[-50:].mean():.2f}  <- HIGHER during training')
-print(f'  Q-Learning : {ql_cliff.returns[-50:].mean():.2f}   <- LOWER during training, but optimal policy')
+# Cross-seed evaluation
+sarsa_cliff_evals = np.array([evaluate_greedy(env_cliff, r.Q, episodes=500, seed=123)[0].mean() for r in sarsa_cliff_runs])
+ql_cliff_evals = np.array([evaluate_greedy(env_cliff, r.Q, episodes=500, seed=123)[0].mean() for r in ql_cliff_runs])
+
+print(f'\\nGreedy eval (mean ± std across 3 seeds):')
+print(f'  SARSA      : {sarsa_cliff_evals.mean():.2f} ± {sarsa_cliff_evals.std():.2f}  per-seed: {[f\"{x:.0f}\" for x in sarsa_cliff_evals]}')
+print(f'  Q-Learning : {ql_cliff_evals.mean():.2f} ± {ql_cliff_evals.std():.2f}  per-seed: {[f\"{x:.0f}\" for x in ql_cliff_evals]}')
+
+sarsa_train_last = np.array([r.returns[-50:].mean() for r in sarsa_cliff_runs])
+ql_train_last = np.array([r.returns[-50:].mean() for r in ql_cliff_runs])
+print(f'\\nTraining return last 50 episodes (mean across 3 seeds):')
+print(f'  SARSA      : {sarsa_train_last.mean():.2f} ± {sarsa_train_last.std():.2f}  <- HIGHER during training')
+print(f'  Q-Learning : {ql_train_last.mean():.2f} ± {ql_train_last.std():.2f}  <- LOWER during training, optimal greedy policy')
 """))
 
 CELLS.append(code(
-"""# Plot training curves side by side
+"""# Plot training curves side by side — mean ± std across 3 seeds
 fig, ax = plt.subplots(figsize=(9, 4.5))
-for res, label, color in [(sarsa_cliff, 'SARSA', 'C0'), (ql_cliff, 'Q-Learning', 'C1')]:
-    ma = smooth(res.returns, 25)
-    ax.plot(np.arange(len(ma)) + 24, ma, color=color, linewidth=2, label=label)
-ax.set_title(f'{CLIFF_ID} — training returns (25-ep MA)')
+window = 50
+for runs, label, color in [(sarsa_cliff_runs, 'SARSA', 'C0'),
+                           (ql_cliff_runs, 'Q-Learning', 'C1')]:
+    stack = np.stack([smooth(r.returns, window) for r in runs])
+    m = stack.mean(axis=0); s = stack.std(axis=0)
+    x = np.arange(len(m)) + window - 1
+    ax.plot(x, m, color=color, linewidth=2, label=f'{label} (mean of 3 seeds)')
+    ax.fill_between(x, m - s, m + s, color=color, alpha=0.18)
+ax.set_title(f'{CLIFF_ID} — training returns, 3 seeds, ±1 std (50-ep MA)')
 ax.set_xlabel('Episode'); ax.set_ylabel('Return per episode')
-ax.set_ylim(-200, 0)
-ax.legend(); ax.grid(alpha=0.3)
+ax.set_ylim(-100, 5)
+ax.legend(loc='lower right'); ax.grid(alpha=0.3)
 plt.show()
 """))
 
