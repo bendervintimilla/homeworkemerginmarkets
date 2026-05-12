@@ -56,6 +56,9 @@ wandb/
 # Plots (regeneration is cheap, keep small samples in /assets only)
 *.gif
 *.mp4
+# ...except shipped report videos
+!group_project/web/*.mp4
+!group_project/web/*.gif
 
 # Secrets
 .env
