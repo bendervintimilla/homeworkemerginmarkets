@@ -1,0 +1,170 @@
+{
+  "cliff": {
+    "sarsa": {
+      "v_star_start": -12.247897700103202,
+      "threshold": -24.0727784898546,
+      "algo_final_mean": -21.66550064086914,
+      "seeds_reached": 10,
+      "n_seeds": 10,
+      "mean_episodes_to_threshold": 7221.6,
+      "std_episodes_to_threshold": 214.47879978113355,
+      "per_seed_episodes": [
+        7212,
+        6912,
+        7448,
+        7235,
+        7373,
+        6976,
+        7577,
+        6987,
+        7230,
+        7266
+      ]
+    },
+    "q_learning": {
+      "v_star_start": -12.247897700103202,
+      "threshold": -32.23611195882162,
+      "algo_final_mean": -29.012500762939453,
+      "seeds_reached": 10,
+      "n_seeds": 10,
+      "mean_episodes_to_threshold": 7803.4,
+      "std_episodes_to_threshold": 74.42251750049249,
+      "per_seed_episodes": [
+        7851,
+        7794,
+        7843,
+        7717,
+        7766,
+        7722,
+        7850,
+        7771,
+        7758,
+        7962
+      ]
+    },
+    "expected_sarsa": {
+      "v_star_start": -12.247897700103202,
+      "threshold": -21.50000042385525,
+      "algo_final_mean": -19.350000381469727,
+      "seeds_reached": 10,
+      "n_seeds": 10,
+      "mean_episodes_to_threshold": 7019.5,
+      "std_episodes_to_threshold": 181.26729802513563,
+      "per_seed_episodes": [
+        7341,
+        6797,
+        7193,
+        7045,
+        6955,
+        6786,
+        6869,
+        6948,
+        7108,
+        7153
+      ]
+    },
+    "double_q": {
+      "v_star_start": -12.247897700103202,
+      "threshold": -33.59222200181749,
+      "algo_final_mean": -30.232999801635742,
+      "seeds_reached": 10,
+      "n_seeds": 10,
+      "mean_episodes_to_threshold": 7630.1,
+      "std_episodes_to_threshold": 118.41307172586798,
+      "per_seed_episodes": [
+        7543,
+        7728,
+        7455,
+        7729,
+        7458,
+        7715,
+        7667,
+        7765,
+        7543,
+        7698
+      ]
+    }
+  },
+  "taxi": {
+    "sarsa": {
+      "threshold": 4.707899951934815,
+      "algo_final_mean": 5.230999946594238,
+      "seeds_reached": 10,
+      "n_seeds": 10,
+      "mean_episodes_to_threshold": 15936.2,
+      "std_episodes_to_threshold": 98.6878355669476,
+      "per_seed_episodes": [
+        15886,
+        15936,
+        16094,
+        15990,
+        15959,
+        15861,
+        15868,
+        16000,
+        15748,
+        16020
+      ]
+    },
+    "q_learning": {
+      "threshold": 4.908149814605713,
+      "algo_final_mean": 5.453499794006348,
+      "seeds_reached": 10,
+      "n_seeds": 10,
+      "mean_episodes_to_threshold": 15993.8,
+      "std_episodes_to_threshold": 140.97107662369768,
+      "per_seed_episodes": [
+        15787,
+        16032,
+        15891,
+        15969,
+        16100,
+        16110,
+        16074,
+        16238,
+        15844,
+        15893
+      ]
+    },
+    "expected_sarsa": {
+      "threshold": 4.802850151062012,
+      "algo_final_mean": 5.33650016784668,
+      "seeds_reached": 10,
+      "n_seeds": 10,
+      "mean_episodes_to_threshold": 15959.0,
+      "std_episodes_to_threshold": 100.40584312346236,
+      "per_seed_episodes": [
+        15862,
+        15921,
+        16035,
+        15976,
+        15894,
+        16121,
+        16071,
+        15840,
+        15847,
+        16023
+      ]
+    },
+    "double_q": {
+      "threshold": 4.558949804306031,
+      "algo_final_mean": 5.065499782562256,
+      "seeds_reached": 10,
+      "n_seeds": 10,
+      "mean_episodes_to_threshold": 15897.9,
+      "std_episodes_to_threshold": 134.22903312373717,
+      "per_seed_episodes": [
+        15911,
+        15829,
+        15728,
+        16003,
+        15845,
+        16019,
+        15841,
+        15875,
+        15755,
+        16173
+      ]
+    }
+  }
+}
