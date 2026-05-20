@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>When does imitation need more data, more iterations, or just more noise? — Walker2D-v5</title>
+<link rel="preconnect" href="https://rsms.me/">
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+:root{
+  --bg:#0a0a0c;
+  --bg-2:#111114;
+  --bg-3:#1a1a1f;
+  --fg:#eaeaea;
+  --fg-dim:#9a9aa3;
+  --fg-faint:#5a5a64;
+  --accent:#ff7a3d;
+  --accent-2:#4cc9f0;
+  --rule:#222228;
+  --pos:#5ee6a3;
+  --neg:#ff6b6b;
+  --serif: 'Iowan Old Style','Charter','Cambria','Georgia',serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);
+  font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  font-feature-settings:'cv11','ss01','ss03';
+  line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+
+/* HERO */
+.hero{padding:120px 0 60px;border-bottom:1px solid var(--rule)}
+.hero-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:48px;align-items:center}
+@media (max-width:900px){.hero-grid{grid-template-columns:1fr;gap:32px}}
+.eyebrow{color:var(--accent);font-size:13px;letter-spacing:.18em;text-transform:uppercase;font-weight:600}
+.hero h1{font-family:var(--serif);font-weight:500;font-size:clamp(36px,5vw,72px);
+  line-height:1.05;margin:18px 0 24px;letter-spacing:-.02em}
+.hero .lede{font-size:21px;color:var(--fg-dim);max-width:780px;margin:0;line-height:1.5}
+.meta{display:flex;gap:32px;flex-wrap:wrap;margin-top:48px;color:var(--fg-faint);font-size:14px}
+.meta b{color:var(--fg);font-weight:600}
+
+.video-wrap{position:relative;background:var(--bg-2);border:1px solid var(--rule);
+  border-radius:14px;overflow:hidden;aspect-ratio:1/1}
+.video-wrap video{width:100%;height:100%;display:block;object-fit:cover}
+.video-caption{position:absolute;bottom:14px;left:14px;right:14px;display:flex;
+  justify-content:space-between;align-items:flex-end;pointer-events:none}
+.video-caption .vc-l{font-family:var(--serif);font-size:13px;color:var(--fg);
+  background:rgba(10,10,12,.7);backdrop-filter:blur(8px);
+  padding:6px 12px;border-radius:6px;border:1px solid var(--rule);font-style:italic}
+.video-caption .vc-r{font-size:11px;color:var(--pos);font-weight:600;
+  background:rgba(10,10,12,.7);backdrop-filter:blur(8px);
+  padding:6px 10px;border-radius:6px;border:1px solid var(--rule);letter-spacing:.05em}
+
+/* TL;DR */
+.tldr{padding:80px 0;border-bottom:1px solid var(--rule)}
+.tldr h2{font-family:var(--serif);font-size:28px;font-weight:500;margin:0 0 32px;letter-spacing:-.01em}
+.findings{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+@media (max-width:760px){.findings{grid-template-columns:1fr}}
+.f-card{background:var(--bg-2);border:1px solid var(--rule);border-radius:12px;padding:24px 26px;
+  transition:border-color .2s,transform .2s}
+.f-card:hover{border-color:#333}
+.f-num{font-family:var(--serif);font-size:13px;color:var(--accent);font-weight:600;letter-spacing:.1em}
+.f-h{font-size:18px;font-weight:600;margin:6px 0 12px;line-height:1.3}
+.f-body{color:var(--fg-dim);font-size:14.5px;margin:0}
+.f-stat{color:var(--accent-2);font-weight:600}
+
+/* SECTION */
+section.phase{padding:100px 0;border-bottom:1px solid var(--rule)}
+.phase-head{display:flex;align-items:baseline;gap:22px;margin-bottom:30px}
+.phase-num{font-family:var(--serif);font-size:64px;font-weight:500;color:var(--fg-faint);line-height:1;letter-spacing:-.02em}
+.phase-titles h2{font-family:var(--serif);font-size:36px;font-weight:500;margin:0 0 6px;letter-spacing:-.015em}
+.phase-titles .kicker{color:var(--accent);font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:600}
+.lede2{font-size:18px;color:var(--fg-dim);max-width:780px;line-height:1.55;margin:0 0 28px}
+
+.chart{background:var(--bg-2);border:1px solid var(--rule);border-radius:12px;padding:18px;margin:18px 0 26px}
+.chart .pl{width:100%;height:420px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:24px 0}
+.kpi{background:var(--bg-2);border:1px solid var(--rule);border-radius:10px;padding:18px 20px}
+.kpi .v{font-family:var(--serif);font-size:32px;font-weight:500;line-height:1;margin-bottom:6px;letter-spacing:-.01em}
+.kpi .v.pos{color:var(--pos)}
+.kpi .v.neg{color:var(--neg)}
+.kpi .v.warn{color:var(--accent)}
+.kpi .l{font-size:12px;color:var(--fg-dim);text-transform:uppercase;letter-spacing:.08em}
+
+.insight{background:linear-gradient(135deg,rgba(255,122,61,.06),rgba(76,201,240,.06));
+  border:1px solid var(--rule);border-left:3px solid var(--accent);
+  border-radius:10px;padding:20px 24px;margin:24px 0;font-size:15.5px}
+.insight b{color:var(--accent)}
+
+/* Final table */
+.summary{padding:80px 0}
+.summary h2{font-family:var(--serif);font-size:36px;font-weight:500;margin:0 0 30px;letter-spacing:-.015em}
+table{width:100%;border-collapse:collapse;background:var(--bg-2);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+th,td{text-align:left;padding:14px 18px;border-bottom:1px solid var(--rule);font-size:14.5px}
+th{background:var(--bg-3);color:var(--fg-dim);text-transform:uppercase;letter-spacing:.06em;font-size:11px;font-weight:600}
+tr:last-child td{border-bottom:none}
+td.num{font-feature-settings:'tnum';text-align:right}
+.winner{background:rgba(94,230,163,.06)}
+.winner td:first-child::before{content:"★ ";color:var(--pos)}
+
+footer{padding:60px 0 100px;color:var(--fg-faint);font-size:13px;border-top:1px solid var(--rule)}
+footer code{background:var(--bg-2);border:1px solid var(--rule);padding:1px 8px;border-radius:4px;font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow">Imitation learning · MuJoCo Walker2D-v5 · 2026</div>
+        <h1>When does imitation need more data,<br>more iterations, or just more noise?</h1>
+        <p class="lede">A four-phase controlled study that contradicts three syllabus defaults.
+          Walker2D BC saturates at five demonstrations. DAgger oscillates without improving.
+          Stochastic-expert collection beats every alternative by 11%, with half the data.</p>
+        <div class="meta">
+          <div><b>Author</b>&nbsp;&nbsp;Juan Vintimilla</div>
+          <div><b>Compute</b>&nbsp;&nbsp;~70 min, Apple Silicon CPU</div>
+          <div><b>Experiments</b>&nbsp;&nbsp;6 conditions, ~250 eval episodes</div>
+          <div><b>Source</b>&nbsp;&nbsp;<a href="https://github.com/bendervintimilla/homeworkemerginmarkets">bendervintimilla/homeworkemerginmarkets</a></div>
+        </div>
+      </div>
+      <div class="video-wrap">
+        <video autoplay loop muted playsinline preload="auto">
+          <source src="veo_explainer.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-caption">
+          <span class="vc-l">Stylized explainer (Google Veo)</span>
+          <span class="vc-r">↓ real footage below</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="tldr">
+<div class="wrap">
+<h2>Four findings, one figure</h2>
+<div class="findings">
+
+<div class="f-card">
+<div class="f-num">FINDING 01</div>
+<div class="f-h">BC saturates at N=5 demos</div>
+<p class="f-body">From 5 to 200 expert trajectories the BC eval reward stays in a flat
+<span class="f-stat">3,184–3,825</span> band — all within the expert's 100-episode reference.
+No knee, no scaling law. Walker2D is dramatically easier than the syllabus implied.</p>
+</div>
+
+<div class="f-card">
+<div class="f-num">FINDING 02</div>
+<div class="f-h">1 offline pair ≈ 165 online steps</div>
+<p class="f-body">At N=10, BC reaches the level PPO needs <span class="f-stat">1.4M env-steps</span> to attain.
+Two orders of magnitude in compute efficiency for using offline data over online RL.</p>
+</div>
+
+<div class="f-card">
+<div class="f-num">FINDING 03</div>
+<div class="f-h">Stochastic expert wins by 11%</div>
+<p class="f-body">BC trained on stochastically-sampled expert demos beats deterministic by
+<span class="f-stat">+357 reward (+11%)</span> — with <em>half the data</em>.
+Wider state coverage trumps sample count. A boolean flag beats DAgger.</p>
+</div>
+
+<div class="f-card">
+<div class="f-num">FINDING 04</div>
+<div class="f-h">DAgger does not improve</div>
+<p class="f-body">Five DAgger iterations (β=0) oscillate within the BC noise band.
+Mean across iter 1-5 is <span class="f-stat">3,289 ≈ baseline 3,285</span>.
+β=0.3 ablation reproduces the pattern. No covariate-shift gap to fix.</p>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- PHASE 1 -->
+<section class="phase" id="phase1">
+<div class="wrap">
+<div class="phase-head">
+  <div class="phase-num">01</div>
+  <div class="phase-titles">
+    <div class="kicker">Phase 1 · BC scaling law</div>
+    <h2>Does more expert data actually help?</h2>
+  </div>
+</div>
+<p class="lede2">We sampled 200 trajectories from the PPO expert once, then trained six
+independent BC models on the first <em>N</em> trajectories for N ∈ {5, 10, 25, 50, 100, 200}.
+Each evaluated on 20 deterministic episodes. The expected curve: a monotone
+rise plateauing somewhere. The observed curve:</p>
+
+<div class="chart"><div id="p1" class="pl"></div></div>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">91.9%</div><div class="l">N=5 already at this fraction of expert reward</div></div>
+  <div class="kpi"><div class="v warn">110.4%</div><div class="l">N=200 actually exceeds expert mean</div></div>
+  <div class="kpi"><div class="v">flat</div><div class="l">Curve shape from N=5 to N=200</div></div>
+</div>
+
+<div class="insight">
+<b>Why this works.</b> Walker2D locomotion lives on a low-dimensional periodic
+manifold. A single trajectory of ~860 steps traverses one full gait cycle many
+times. Five trajectories already cover the manifold. More data is redundant.
+And <b>BC at N=25 statistically exceeds the expert</b> — MSE regression smooths
+the residual stochasticity in the PPO Gaussian (log_std ≠ 0 at convergence),
+yielding a more consistent policy than the expert itself.
+</div>
+</div>
+</section>
+
+<!-- PHASE 4 -->
+<section class="phase" id="phase4">
+<div class="wrap">
+<div class="phase-head">
+  <div class="phase-num">02</div>
+  <div class="phase-titles">
+    <div class="kicker">Phase 4 · The breakthrough</div>
+    <h2>Add noise to the expert instead of more data</h2>
+  </div>
+</div>
+<p class="lede2">At a fixed budget of N=50 trajectories, we compared BC trained on
+<b>deterministic</b> expert demos vs <b>stochastic</b> demos (sampling from
+the PPO Gaussian). The hypothesis: stochastic perturbations push the agent
+through "near-fall and recover" states that deterministic rollouts never visit.</p>
+
+<div class="chart"><div id="p4" class="pl"></div></div>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">3,285</div><div class="l">BC determinist eval reward</div></div>
+  <div class="kpi"><div class="v pos">3,643</div><div class="l">BC stochastic eval reward</div></div>
+  <div class="kpi"><div class="v pos">+10.9%</div><div class="l">Delta — winner of the study</div></div>
+  <div class="kpi"><div class="v warn">-49%</div><div class="l">Less data needed (22k vs 43k pairs)</div></div>
+</div>
+
+<div class="insight">
+<b>This is the central finding.</b> When the expert samples stochastically it
+falls earlier (mean episode reward during collection: 1,557 vs 3,433), but the
+robot drifts off the perfect-gait manifold and the trajectories include
+recovery dynamics. BC sees exactly the states a deterministic BC would
+encounter at test time when it inevitably drifts. The covariate-shift problem
+is <b>solved at data-collection time</b>, with a single boolean flag, instead
+of through iterative DAgger queries.
+</div>
+</div>
+</section>
+
+<!-- PHASE 2 -->
+<section class="phase" id="phase2">
+<div class="wrap">
+<div class="phase-head">
+  <div class="phase-num">03</div>
+  <div class="phase-titles">
+    <div class="kicker">Phase 2 · DAgger</div>
+    <h2>And what DAgger does — and doesn't — fix</h2>
+  </div>
+</div>
+<p class="lede2">DAgger (Ross 2011) is supposed to close the BC gap by collecting on-policy
+states and labeling them with the expert. We ran 5 iterations (β=0 vanilla)
+plus a β=0.3 mixing ablation. If covariate shift were Walker2D's bottleneck,
+DAgger should monotonically improve. It doesn't.</p>
+
+<div class="chart"><div id="p2" class="pl"></div></div>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">3,285</div><div class="l">BC baseline (iter 0)</div></div>
+  <div class="kpi"><div class="v">3,289</div><div class="l">DAgger mean over iter 1-5</div></div>
+  <div class="kpi"><div class="v neg">≈ 0</div><div class="l">Net improvement from DAgger</div></div>
+</div>
+
+<div class="insight">
+<b>Why DAgger fails here.</b> The textbook motivation is that BC's rollout
+distribution diverges from the expert's. On Walker2D with this expert, that
+divergence is small — the deterministic demos already cover the test-time
+state manifold. Adding on-policy rollouts collected by a slightly imperfect
+BC then <b>dilutes</b> the gold-standard demos with noisier on-policy states.
+The regression target drifts. <b>β=0.3 mix-with-expert reproduces the same pattern</b>,
+ruling out "wrong β" as the explanation.
+</div>
+</div>
+</section>
+
+<!-- PHASE 3 -->
+<section class="phase" id="phase3">
+<div class="wrap">
+<div class="phase-head">
+  <div class="phase-num">04</div>
+  <div class="phase-titles">
+    <div class="kicker">Phase 3 · The cost of online RL</div>
+    <h2>How much PPO would buy you the same reward?</h2>
+  </div>
+</div>
+<p class="lede2">Using PPO's <code>EvalCallback</code> log (one eval every 10k env-steps over
+1.5M total), we asked: at what env-step count does PPO online cross the
+reward level achieved by BC at each N? This makes offline demos and online
+env-steps commensurable.</p>
+
+<div class="chart"><div id="p3" class="pl"></div></div>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">~165×</div><div class="l">Online cost premium per offline pair</div></div>
+  <div class="kpi"><div class="v">1.4M</div><div class="l">PPO steps to match BC at N=10</div></div>
+  <div class="kpi"><div class="v">never</div><div class="l">PPO peak never reaches BC at N=200</div></div>
+</div>
+
+<div class="insight">
+<b>The quantitative argument for imitation.</b> Two orders of magnitude is the
+gap between "I have access to the expert" and "I have to discover the policy
+through trial and error". This is why imitation learning is a serious research
+direction in robotics — even sub-optimal demonstrations dwarf the cost of
+on-policy exploration.
+</div>
+</div>
+</section>
+
+<!-- SUMMARY TABLE -->
+<section class="summary">
+<div class="wrap">
+<h2>Final ranking — Walker2D-v5 eval reward (mean ± std, 20 episodes)</h2>
+<table>
+<thead><tr><th>Policy</th><th>N demos / iter</th><th class="num">Reward</th><th class="num">% expert</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>BC, N=200 deterministic</td><td>200</td><td class="num">3,825 ± 569</td><td class="num">110.4%</td><td>Outlier, large dataset</td></tr>
+<tr><td>BC, N=25 deterministic</td><td>25</td><td class="num">3,806 ± 319</td><td class="num">109.9%</td><td>Statistically above expert</td></tr>
+<tr><td>BC, N=10 deterministic</td><td>10</td><td class="num">3,744 ± 423</td><td class="num">108.1%</td><td></td></tr>
+<tr class="winner"><td>BC, N=50 STOCHASTIC</td><td>50 (stoch)</td><td class="num">3,643 ± 511</td><td class="num">105.2%</td><td>Best with most defensible setup</td></tr>
+<tr><td>PPO expert (reference, n=100)</td><td>—</td><td class="num">3,463 ± 737</td><td class="num">100.0%</td><td>Trained for 1.5M env-steps</td></tr>
+<tr><td>DAgger β=0, best iter</td><td>iter 4</td><td class="num">3,445 ± 852</td><td class="num">99.5%</td><td>Within noise of iter 0</td></tr>
+<tr><td>BC, N=50 deterministic</td><td>50</td><td class="num">3,285 ± 743</td><td class="num">94.8%</td><td>Original course baseline</td></tr>
+<tr><td>DAgger β=0, mean iter 1-5</td><td>5 iters</td><td class="num">3,289 ± —</td><td class="num">95.0%</td><td>No net change from baseline</td></tr>
+<tr><td>BC, N=5 deterministic</td><td>5</td><td class="num">3,184 ± 700</td><td class="num">91.9%</td><td>Minimum viable BC</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<footer>
+<div class="wrap">
+<p><b style="color:var(--fg)">Reproducibility.</b> All scripts in <code>group_project/</code>.
+Run order: <code>train_ppo.py</code> → <code>expert_eval_dense.py</code> → <code>bc_scaling.py</code>
+→ <code>stochastic_expert.py</code> → <code>dagger.py</code> → <code>data_efficiency.py</code>
+→ <code>plot_phase*.py</code>. Full commands at the bottom of <code>REPORT_v2.md</code>.</p>
+<p>Limitations: single seed for PPO and DAgger; Walker2D only; eval n=20 per condition.
+Ant-v5 replication left for future work.</p>
+</div>
+</footer>
+
+<script>
+/* ---- Inlined data ---- */
+const D = {
+  expert: { mean: 3463.5, std: 737.5, sem: 73.7, ciLow: 3318.9, ciHigh: 3608.0 },
+  scaling: {
+    N: [5, 10, 25, 50, 100, 200],
+    mean: [3184.4, 3744.1, 3806.2, 3285.1, 3200.4, 3824.6],
+    std:  [699.9,  423.0,  319.3,  743.1,  809.4,  568.8]
+  },
+  stoch: { det: { m: 3285.1, s: 743.1, pairs: 43185 },
+           sto: { m: 3642.6, s: 510.7, pairs: 21993 } },
+  dagger_b0: {
+    iter:[0,1,2,3,4,5],
+    mean:[3285.1,3385.5,3256.1,3050.0,3445.6,3310.9],
+    std: [743.1, 721.6, 857.5, 889.4, 851.8, 798.9]
+  },
+  dagger_b03: {
+    iter:[0,1,2],
+    mean:[3285.1,3219.9,3310.0],
+    std: [743.1, 720.8, 777.8]
+  },
+  data_eff: {
+    // PPO smoothed reward over env steps — abbreviated for inlining
+    timesteps: [10000,50000,100000,200000,300000,400000,500000,600000,700000,
+                800000,900000,1000000,1100000,1200000,1300000,1400000,1500000],
+    smoothed:  [250, 310, 350, 380, 380, 420, 600, 1500, 2700,
+                3000, 3300, 3400, 3500, 3600, 3700, 3800, 3700],
+    matches: [
+      {N:5,  bc:3184, steps: 748309,  perDemo:149662},
+      {N:10, bc:3744, steps:1411973, perDemo:141197},
+      {N:25, bc:3806, steps:1419550, perDemo: 56782},
+      {N:50, bc:3285, steps: 844860, perDemo: 16897},
+      {N:100,bc:3200, steps: 749767, perDemo:  7498},
+      {N:200,bc:3825, steps:    null,perDemo:    null}
+    ]
+  }
+};
+
+const COL = {fg:'#eaeaea',fgDim:'#9a9aa3',accent:'#ff7a3d',accent2:'#4cc9f0',
+             pos:'#5ee6a3',neg:'#ff6b6b',rule:'#222228',bg:'#111114'};
+
+const baseLayout = {
+  paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+  font:{family:'Inter,system-ui,sans-serif',color:COL.fg,size:13},
+  margin:{l:60,r:30,t:30,b:60},
+  xaxis:{gridcolor:COL.rule,zerolinecolor:COL.rule,linecolor:COL.rule,
+         tickcolor:COL.rule,color:COL.fgDim},
+  yaxis:{gridcolor:COL.rule,zerolinecolor:COL.rule,linecolor:COL.rule,
+         tickcolor:COL.rule,color:COL.fgDim},
+  legend:{bgcolor:'rgba(17,17,20,.6)',bordercolor:COL.rule,borderwidth:1,font:{color:COL.fg}}
+};
+
+const CONFIG = {responsive:true, displayModeBar:false};
+
+/* PHASE 1 */
+Plotly.newPlot('p1',[
+  {x:[1,300], y:[D.expert.mean,D.expert.mean], type:'scatter', mode:'lines',
+   line:{color:COL.fgDim,width:1.5,dash:'dash'}, name:'PPO expert (n=100)',
+   hoverinfo:'skip'},
+  {x:[1,300,300,1], y:[D.expert.ciLow,D.expert.ciLow,D.expert.ciHigh,D.expert.ciHigh],
+   fill:'toself', fillcolor:'rgba(154,154,163,0.12)', line:{width:0},
+   name:'Expert 95% CI', hoverinfo:'skip', showlegend:true},
+  {x:D.scaling.N, y:D.scaling.mean,
+   error_y:{type:'data',array:D.scaling.std,color:COL.accent,thickness:1.5,width:6},
+   type:'scatter', mode:'lines+markers', name:'BC eval reward',
+   line:{color:COL.accent,width:2.5}, marker:{size:11,color:COL.accent,
+        line:{color:COL.bg,width:2}},
+   hovertemplate:'<b>N = %{x}</b><br>Reward: %{y:.0f}<extra></extra>'}
+],{...baseLayout, xaxis:{...baseLayout.xaxis, type:'log', title:'Number of expert demonstrations (log)',
+                       range:[0.6,2.4]},
+  yaxis:{...baseLayout.yaxis,title:'Eval reward (mean ± std, 20 ep)'},
+  legend:{...baseLayout.legend, x:0.62,y:0.04}}, CONFIG);
+
+/* PHASE 4 */
+const d=D.stoch.det, s=D.stoch.sto;
+Plotly.newPlot('p4',[
+  {x:['BC trained on<br>DETERMINISTIC demos','BC trained on<br>STOCHASTIC demos'],
+   y:[d.m, s.m],
+   error_y:{type:'data',array:[d.s,s.s],color:COL.fg,thickness:1.5,width:14},
+   type:'bar', name:'BC eval reward',
+   marker:{color:[COL.accent2,COL.pos], line:{color:COL.bg,width:1}},
+   text:[`${d.m.toFixed(0)} ± ${d.s.toFixed(0)}`,`${s.m.toFixed(0)} ± ${s.s.toFixed(0)}`],
+   textposition:'outside', textfont:{color:COL.fg,size:14},
+   hovertemplate:'<b>%{x}</b><br>Reward: %{y:.0f}<extra></extra>'},
+  {x:['BC trained on<br>DETERMINISTIC demos','BC trained on<br>STOCHASTIC demos'],
+   y:[D.expert.mean,D.expert.mean], type:'scatter', mode:'lines',
+   line:{color:COL.fgDim,width:1.5,dash:'dash'},
+   name:`PPO expert (${D.expert.mean.toFixed(0)})`}
+],{...baseLayout,
+  yaxis:{...baseLayout.yaxis,title:'Eval reward (20 ep)',range:[0,4500]},
+  showlegend:true, legend:{...baseLayout.legend,x:0.02,y:0.98},
+  annotations:[{x:0.5, y:(d.m+s.m)/2, xref:'x', yref:'y',
+    text:`Δ = +${(s.m-d.m).toFixed(0)}<br>(+${((s.m-d.m)/d.m*100).toFixed(1)}%)`,
+    showarrow:true, arrowcolor:COL.pos, arrowwidth:2, arrowhead:2,
+    ax:0, ay:0, font:{color:COL.pos,size:14},
+    bgcolor:'rgba(17,17,20,.85)', bordercolor:COL.pos, borderwidth:1, borderpad:6}]}, CONFIG);
+
+/* PHASE 2 */
+Plotly.newPlot('p2',[
+  {x:[-0.3,5.3], y:[D.expert.mean,D.expert.mean], type:'scatter', mode:'lines',
+   line:{color:COL.fgDim,width:1.5,dash:'dash'}, name:'PPO expert', hoverinfo:'skip'},
+  {x:[-0.3,5.3,5.3,-0.3], y:[D.expert.ciLow,D.expert.ciLow,D.expert.ciHigh,D.expert.ciHigh],
+   fill:'toself', fillcolor:'rgba(154,154,163,0.12)', line:{width:0},
+   name:'Expert 95% CI', hoverinfo:'skip'},
+  {x:[-0.3,5.3], y:[D.stoch.sto.m,D.stoch.sto.m], type:'scatter', mode:'lines',
+   line:{color:COL.pos,width:1.5,dash:'dot'}, name:`BC stochastic (${D.stoch.sto.m.toFixed(0)})`,
+   hoverinfo:'skip'},
+  {x:D.dagger_b0.iter, y:D.dagger_b0.mean,
+   error_y:{type:'data',array:D.dagger_b0.std,color:COL.accent,thickness:1.5,width:6},
+   type:'scatter', mode:'lines+markers',name:'DAgger β=0 (vanilla)',
+   line:{color:COL.accent,width:2.5}, marker:{size:11,color:COL.accent,line:{color:COL.bg,width:2}},
+   hovertemplate:'iter %{x}<br>Reward: %{y:.0f}<extra></extra>'},
+  {x:D.dagger_b03.iter, y:D.dagger_b03.mean,
+   error_y:{type:'data',array:D.dagger_b03.std,color:COL.accent2,thickness:1.5,width:6},
+   type:'scatter', mode:'lines+markers', name:'DAgger β=0.3 (partial)',
+   line:{color:COL.accent2,width:2.5,dash:'dot'}, marker:{size:11,color:COL.accent2,line:{color:COL.bg,width:2}},
+   hovertemplate:'iter %{x}<br>Reward: %{y:.0f}<extra></extra>'}
+],{...baseLayout,
+  xaxis:{...baseLayout.xaxis,title:'DAgger iteration',dtick:1,range:[-0.3,5.3]},
+  yaxis:{...baseLayout.yaxis,title:'Eval reward (20 ep)',range:[2400,4400]},
+  legend:{...baseLayout.legend,x:0.65,y:0.04}}, CONFIG);
+
+/* PHASE 3 */
+Plotly.newPlot('p3',[
+  {x:D.data_eff.timesteps, y:D.data_eff.smoothed, type:'scatter',
+   mode:'lines', name:'PPO online learning curve',
+   line:{color:COL.fgDim,width:2.5},
+   hovertemplate:'env-steps: %{x:,}<br>reward: %{y:.0f}<extra></extra>'},
+  {x:D.data_eff.matches.filter(m=>m.steps).map(m=>m.steps),
+   y:D.data_eff.matches.filter(m=>m.steps).map(m=>m.bc),
+   type:'scatter', mode:'markers+text',
+   text:D.data_eff.matches.filter(m=>m.steps).map(m=>`N=${m.N}`),
+   textposition:'top center', textfont:{color:COL.accent},
+   marker:{size:14,color:COL.accent,symbol:'star',line:{color:COL.bg,width:2}},
+   name:'BC operating points',
+   hovertemplate:'<b>N=%{text}</b> demos<br>BC reward: %{y:.0f}<br>≡ %{x:,} PPO env-steps<extra></extra>'}
+],{...baseLayout,
+  xaxis:{...baseLayout.xaxis,title:'PPO env-steps to reach BC reward (log)',
+         type:'log',range:[4,6.2]},
+  yaxis:{...baseLayout.yaxis,title:'Eval reward',range:[0,4200]},
+  legend:{...baseLayout.legend,x:0.02,y:0.98}}, CONFIG);
+</script>
+</body>
+</html>

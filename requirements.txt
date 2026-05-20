@@ -1,0 +1,31 @@
+# Core
+numpy>=1.24
+matplotlib>=3.7
+pandas>=2.0
+tqdm>=4.65
+seaborn>=0.12
+
+# RL environments
+gymnasium[box2d,toy-text,classic-control]>=0.29
+pygame>=2.5
+
+# Deep learning (the course uses Keras)
+tensorflow>=2.15
+keras>=3.0
+
+# Optional - PyTorch for the group project / Stable Baselines3
+torch>=2.1
+stable-baselines3>=2.2
+
+# Mujoco for Walker2D / Ant (group project)
+mujoco>=3.0
+
+# AI Agents (HW6, optional)
+crewai>=0.30
+crewai-tools>=0.4
+langchain>=0.1
+python-dotenv>=1.0
+
+# Notebooks
+jupyter>=1.0
+ipykernel>=6.25

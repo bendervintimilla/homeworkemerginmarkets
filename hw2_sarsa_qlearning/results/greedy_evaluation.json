@@ -1,0 +1,86 @@
+{
+  "taxi": {
+    "random": {
+      "reward_mean": -769.9164999999999,
+      "reward_std": 7.44435768813461,
+      "steps_mean": 196.822,
+      "steps_std": 0.885246983740817,
+      "success_rate_mean": 0.0445,
+      "success_rate_std": 0.011890705987824648
+    },
+    "sarsa": {
+      "reward_mean": 7.92,
+      "reward_std": 0.26763366338668576,
+      "steps_mean": 13.079999999999998,
+      "steps_std": 0.26763366338668576,
+      "success_rate_mean": 1.0,
+      "success_rate_std": 0.0
+    },
+    "q_learning": {
+      "reward_mean": 7.9735,
+      "reward_std": 0.14708368744055558,
+      "steps_mean": 13.026499999999999,
+      "steps_std": 0.14708368744055547,
+      "success_rate_mean": 1.0,
+      "success_rate_std": 0.0
+    },
+    "expected_sarsa": {
+      "reward_mean": 7.931,
+      "reward_std": 0.27427480137020727,
+      "steps_mean": 13.068999999999999,
+      "steps_std": 0.2742748013702072,
+      "success_rate_mean": 1.0,
+      "success_rate_std": 0.0
+    },
+    "double_q": {
+      "reward_mean": 7.931,
+      "reward_std": 0.27427480137020727,
+      "steps_mean": 13.068999999999999,
+      "steps_std": 0.2742748013702072,
+      "success_rate_mean": 1.0,
+      "success_rate_std": 0.0
+    }
+  },
+  "cliff": {
+    "random": {
+      "reward_mean": -4992.133,
+      "reward_std": 92.65171687561957,
+      "steps_mean": 485.851,
+      "steps_std": 5.012081403967805,
+      "success_rate_mean": 0.06499999999999999,
+      "success_rate_std": 0.017795130420052187
+    },
+    "sarsa": {
+      "reward_mean": -53.6,
+      "reward_std": 77.15957490810847,
+      "steps_mean": 53.6,
+      "steps_std": 77.15957490810847,
+      "success_rate_mean": 0.8,
+      "success_rate_std": 0.4216370213557839
+    },
+    "q_learning": {
+      "reward_mean": -13.0,
+      "reward_std": 0.0,
+      "steps_mean": 13.0,
+      "steps_std": 0.0,
+      "success_rate_mean": 1.0,
+      "success_rate_std": 0.0
+    },
+    "expected_sarsa": {
+      "reward_mean": -17.0,
+      "reward_std": 0.0,
+      "steps_mean": 17.0,
+      "steps_std": 0.0,
+      "success_rate_mean": 1.0,
+      "success_rate_std": 0.0
+    },
+    "double_q": {
+      "reward_mean": -13.0,
+      "reward_std": 0.0,
+      "steps_mean": 13.0,
+      "steps_std": 0.0,
+      "success_rate_mean": 1.0,
+      "success_rate_std": 0.0
+    }
+  }
+}
